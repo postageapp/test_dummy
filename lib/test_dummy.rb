@@ -1,30 +1,34 @@
-require 'test_dummy/railtie'
-
 module TestDummy
+  require 'test_dummy/railtie'
+
+  autoload(:TestHelper, File.expand_path('test_dummy/test_helper', File.dirname(__FILE__)))
+
   def self.included(base)
     base.send(:extend, ClassMethods)
     base.send(:include, InstanceMethods)
   end
   
-  # Combines several sets of parameters together into a single set in order
-  # of lowest priority to highest priority. Supplied list can contain nil
-  # values which will be ignored. Returns a Hash with symbolized keys.
-  def self.combine_attributes(*sets)
-    combined_attributes = { }
+  module Support
+    # Combines several sets of parameters together into a single set in order
+    # of lowest priority to highest priority. Supplied list can contain nil
+    # values which will be ignored. Returns a Hash with symbolized keys.
+    def self.combine_attributes(*sets)
+      combined_attributes = { }
     
-    # Apply sets in order they are listed
-    sets.compact.each do |set|
-      set.each do |k, v|
-        case (v)
-        when nil
-          # Ignore nil assignments
-        else
-          combined_attributes[k.to_sym] = v
+      # Apply sets in order they are listed
+      sets.compact.each do |set|
+        set.each do |k, v|
+          case (v)
+          when nil
+            # Ignore nil assignments
+          else
+            combined_attributes[k.to_sym] = v
+          end
         end
       end
-    end
 
-    combined_attributes
+      combined_attributes
+    end
   end
 
   # Adds a mixin to the core DummyMethods module
@@ -115,7 +119,7 @@ module TestDummy
     # the dummy operation is completed. Returns a dummy model which has not
     # been saved.
     def build_dummy(with_attributes = nil)
-      model = new(self.class.combine_attributes(scope(:create), with_attributes))
+      model = new(TestDummy::Support.combine_attributes(scope(:create), with_attributes))
 
       yield(model) if (block_given?)
 
@@ -140,7 +144,7 @@ module TestDummy
     # Builds a dummy model with some parameters set as supplied. The
     # new model is provided to the optional block for manipulation before
     # the dummy operation is completed and the model is saved. Returns a
-    # dummy model. Will throw ActiveRecord::RecordInvalid if there was a
+    # dummy model. Will throw ActiveRecord::RecordInvalid if there was al20
     # validation failure, or ActiveRecord::RecordNotSaved if the save was
     # blocked by a callback.
     def create_dummy!(with_attributes = nil, &block)

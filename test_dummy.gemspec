@@ -5,7 +5,7 @@
 
 Gem::Specification.new do |s|
   s.name = %q{test_dummy}
-  s.version = "0.1.1"
+  s.version = "0.1.2"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["tadman"]
@@ -25,6 +25,7 @@ Gem::Specification.new do |s|
      "VERSION",
      "lib/test_dummy.rb",
      "lib/test_dummy/railtie.rb",
+     "lib/test_dummy/test_helper.rb",
      "test/helper.rb",
      "test/test_test_dummy.rb",
      "test_dummy.gemspec"
