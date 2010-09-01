@@ -5,13 +5,11 @@ begin
   require 'jeweler'
   Jeweler::Tasks.new do |gem|
     gem.name = "test_dummy"
-    gem.summary = %Q{TODO: one-line summary of your gem}
-    gem.description = %Q{TODO: longer description of your gem}
+    gem.summary = %q[Quick test data generator and fake model maker]
+    gem.description = %q[Test Dummy allows you to define how to fake models automatically so that you can use dummy data for testing instead of fixtures. Dummy models are always generated using the current schema and don't need to me migrated like fixtures.]
     gem.email = "github@tadman.ca"
     gem.homepage = "http://github.com/tadman/test_dummy"
-    gem.authors = ["Scott Tadman"]
-    gem.add_development_dependency "thoughtbot-shoulda", ">= 0"
-    # gem is a Gem::Specification... see http://www.rubygems.org/read/chapter/20 for additional settings
+    gem.authors = %w[ tadman ]
   end
   Jeweler::GemcutterTasks.new
 rescue LoadError
