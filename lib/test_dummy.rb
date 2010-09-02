@@ -1,6 +1,7 @@
 module TestDummy
   require 'test_dummy/railtie'
 
+  autoload(:Helper, File.expand_path('test_dummy/helper', File.dirname(__FILE__)))
   autoload(:TestHelper, File.expand_path('test_dummy/test_helper', File.dirname(__FILE__)))
 
   def self.included(base)
@@ -31,14 +32,14 @@ module TestDummy
     end
   end
 
-  # Adds a mixin to the core DummyMethods module
+  # Adds a mixin to the core Helper module
   def self.add_module(new_module)
-    DummyMethods.send(:extend, new_module)
+    Helper.send(:extend, new_module)
   end
   
-  # Used in an initializer to define things that can be dummyd by all
+  # Used in an initializer to define things that can be dummied by all
   # models if these properties are available.
-  def self.can_dummy(*names, &block)
+  def self.to_dummy(*names, &block)
     case (names.last)
     when Hash
       options = names.pop
@@ -48,7 +49,9 @@ module TestDummy
       block = options[:with]
     end
 
-    DummyMethods.send(
+    # Create a temporary Module and use this to roll up the methods defined
+    # into the Helper module
+    Helper.send(
       :extend,
       names.inject(Module.new) do |m, name|
         m.send(:define_method, name, &block)
@@ -62,10 +65,6 @@ module TestDummy
     TestDummy.instance_eval(&block)
   end
   
-  module DummyMethods
-    # Container for common data faking methods as they are defined.
-  end
-  
   module ClassMethods
     # Returns a Hash which describes the dummy configuration for this
     # Model class.
@@ -77,7 +76,7 @@ module TestDummy
     # that can receive up to two parameters, the first the instance of
     # the model being created, the second the parameters supplied to create
     # it. The first and second parameters may be nil.
-    def can_dummy(*names, &block)
+    def to_dummy(*names, &block)
       options = nil
 
       case (names.last)
@@ -97,7 +96,7 @@ module TestDummy
 
         # For associations, delay creation of block until first call
         # to allow for additional relationships to be defined after
-        # the can_dummy call. Leave placeholder (true) instead.
+        # the to_dummy call. Leave placeholder (true) instead.
 
         @test_dummy[name] = block || true
         @test_dummy_order << name
@@ -119,7 +118,7 @@ module TestDummy
     # the dummy operation is completed. Returns a dummy model which has not
     # been saved.
     def build_dummy(with_attributes = nil)
-      model = new(TestDummy::Support.combine_attributes(scope(:create), with_attributes))
+      model = new(TestDummy::Support.combine_attributes(scoped.scope_for_create, with_attributes))
 
       yield(model) if (block_given?)
 
@@ -157,7 +156,7 @@ module TestDummy
     
     # Produces dummy data for a single attribute.
     def dummy(name, with_attributes = nil)
-      with_attributes = TestDummy.combine_attributes(scope(:create), with_attributes)
+      with_attributes = TestDummy.combine_attributes(scoped.scope_for_create, with_attributes)
       
       dummy_method_call(nil, with_attributes, dummy_method(name))
     end
@@ -165,7 +164,7 @@ module TestDummy
     # Produces a complete set of dummy attributes. These can be used to
     # create a model.
     def dummy_attributes(with_attributes = nil)
-      with_attributes = TestDummy.combine_attributes(scope(:create), with_attributes)
+      with_attributes = TestDummy.combine_attributes(scoped.scope_for_create, with_attributes)
       
       @test_dummy_order.each do |field|
         unless (with_attributes.key?(field))
@@ -223,7 +222,7 @@ module TestDummy
       when Module
         block.method(name)
       when Symbol
-        DummyMethods.method(name)
+        Helper.method(name)
       when true
         # Configure association dummyr the first time it is called
         if (reflection = reflect_on_association(name))

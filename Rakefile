@@ -36,7 +36,7 @@ rescue LoadError
   end
 end
 
-task :test => :check_dependencies
+task :test => [ :check_dependencies, "test:db:prepare" ]
 
 task :default => :test
 
@@ -48,4 +48,13 @@ Rake::RDocTask.new do |rdoc|
   rdoc.title = "test_dummy #{version}"
   rdoc.rdoc_files.include('README*')
   rdoc.rdoc_files.include('lib/**/*.rb')
+end
+
+namespace :test do
+  namespace :db do
+    desc "Prepares the test Sqlite3 database"
+    task :prepare do
+      # ...
+    end
+  end
 end

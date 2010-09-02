@@ -5,7 +5,7 @@
 
 Gem::Specification.new do |s|
   s.name = %q{test_dummy}
-  s.version = "0.1.2"
+  s.version = "0.1.3"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["tadman"]
@@ -24,9 +24,13 @@ Gem::Specification.new do |s|
      "Rakefile",
      "VERSION",
      "lib/test_dummy.rb",
+     "lib/test_dummy/helper.rb",
      "lib/test_dummy/railtie.rb",
      "lib/test_dummy/test_helper.rb",
+     "test/config/database.yml",
+     "test/db/.gitignore",
      "test/helper.rb",
+     "test/models/simple.rb",
      "test/test_test_dummy.rb",
      "test_dummy.gemspec"
   ]
@@ -37,6 +41,7 @@ Gem::Specification.new do |s|
   s.summary = %q{Quick test data generator and fake model maker}
   s.test_files = [
     "test/helper.rb",
+     "test/models/simple.rb",
      "test/test_test_dummy.rb"
   ]
 
