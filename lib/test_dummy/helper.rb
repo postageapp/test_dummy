@@ -12,11 +12,11 @@ module TestDummy::Helper
   def random_string(length = 12)
     string = nil
     
-    while (!string or !AVOID_WORDS.match(string))
+    while (!string or AVOID_SUBSTRINGS.match(string))
       string = ''
 
       length.times do
-        string << CHARACTER_SET.rand
+        string << CHARACTER_SET[rand(CHARACTER_SET.length)]
       end
       
       # As it's not especially hard to find a random word that passes this
@@ -33,11 +33,11 @@ module TestDummy::Helper
   def random_phonetic_string(length = 12)
     string = nil
     
-    while (!string or !AVOID_WORDS.match(string))
+    while (!string or AVOID_SUBSTRINGS.match(string))
       string = ''
 
       length.times do |i|
-        word << (i % 2 != 0) ? CONSONANTS[rand(CONSONANTS.size)] : VOWELS[rand(VOWELS.size)]
+        string << ((i % 2 != 0) ? CONSONANTS[rand(CONSONANTS.size)] : VOWELS[rand(VOWELS.size)])
       end
     end
     

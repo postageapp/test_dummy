@@ -39,7 +39,7 @@ module TestDummy
   
   # Used in an initializer to define things that can be dummied by all
   # models if these properties are available.
-  def self.to_dummy(*names, &block)
+  def self.dummy(*names, &block)
     case (names.last)
     when Hash
       options = names.pop
@@ -76,7 +76,7 @@ module TestDummy
     # that can receive up to two parameters, the first the instance of
     # the model being created, the second the parameters supplied to create
     # it. The first and second parameters may be nil.
-    def to_dummy(*names, &block)
+    def dummy(*names, &block)
       options = nil
 
       case (names.last)
@@ -155,7 +155,7 @@ module TestDummy
     end
     
     # Produces dummy data for a single attribute.
-    def dummy(name, with_attributes = nil)
+    def dummy_attribute(name, with_attributes = nil)
       with_attributes = TestDummy.combine_attributes(scoped.scope_for_create, with_attributes)
       
       dummy_method_call(nil, with_attributes, dummy_method(name))
@@ -186,6 +186,8 @@ module TestDummy
     # This performs the dummy operation on a model with an optional set
     # of parameters.
     def execute_dummy_operation(model, with_attributes = nil)
+      return model unless (@test_dummy_order)
+      
       @test_dummy_order.each do |name|
         if (reflection = reflect_on_association(name))
           unless ((with_attributes and with_attributes.key?(name.to_sym)) or model.send(name))

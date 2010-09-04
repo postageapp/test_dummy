@@ -3,6 +3,27 @@
 Test Dummy is an easy fake data generator library with the ability to create
 fake models or entirely faked data structures on-demand.
 
+After installing the gem, methods to declare how to fake data are made
+available within ActiveRecord-derived models. There are several ways to
+declare how to dummy something:
+
+    class MyModel < ActiveRecord::Base
+      # Pass a block that defines how to dummy this attribute
+      to_dummy :name do
+        "user%d" % rand(10e6)
+      end
+      
+      # Pass a block that defines how to dummy several attributes
+      to_dummy :password, :password_confirmation do
+        'tester'
+      end
+      
+      # Use one of the pre-defined helper methods to dummy this attribute
+      to_dummy :nickname, :use => :random_phonetic_string
+    end
+    
+A standard method
+
 == Copyright
 
 Copyright (c) 2010 Scott Tadman, The Working Group
