@@ -5,6 +5,8 @@
 *.tmproj
 tmtags
 
+test/log
+
 *~
 \#*
 .\#*

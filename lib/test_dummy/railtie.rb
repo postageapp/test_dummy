@@ -8,12 +8,16 @@ when 2
   end
 else
   class TestDummy::Railtie < Rails::Railtie
-    config.before_configuration do
+    def self.apply!
       if (defined?(ActiveRecord))
         ActiveRecord::Base.send(:include, TestDummy)
       end
 
       ActiveSupport::TestCase.send(:include, TestDummy::TestHelper)
+    end
+    
+    config.before_configuration do
+      apply!
     end
   end
 end

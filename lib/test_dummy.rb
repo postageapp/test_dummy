@@ -9,6 +9,10 @@ module TestDummy
     base.send(:include, InstanceMethods)
   end
   
+  def self.declare(on_class, &block)
+    on_class.instance_eval(&block)
+  end
+  
   module Support
     # Combines several sets of parameters together into a single set in order
     # of lowest priority to highest priority. Supplied list can contain nil
@@ -118,6 +122,19 @@ module TestDummy
     # the dummy operation is completed. Returns a dummy model which has not
     # been saved.
     def build_dummy(with_attributes = nil)
+      unless (defined?(@_dummy_module))
+        @_dummy_module =
+          begin
+            dummy_path = File.expand_path("models/dummy/#{name.underscore}.rb", Rails.root)
+            
+            if (File.exist?(dummy_path))
+              require dummy_path
+            end
+          rescue LoadError
+            false
+          end
+      end
+      
       model = new(TestDummy::Support.combine_attributes(scoped.scope_for_create, with_attributes))
 
       yield(model) if (block_given?)
@@ -211,7 +228,7 @@ module TestDummy
       when 1
         block.call(model)
       else
-        block.call
+        model.instance_eval(&block)
       end
     end
     
