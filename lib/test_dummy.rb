@@ -207,7 +207,7 @@ module TestDummy
       
       @test_dummy_order.each do |name|
         if (reflection = reflect_on_association(name))
-          unless ((with_attributes and with_attributes.key?(name.to_sym)) or model.send(name))
+          unless ((with_attributes and with_attributes.key?(name.to_sym)) or model.send(name).present?)
             model.send(:"#{name}=", dummy_method_call(model, with_attributes, dummy_method(name)))
           end
         else
