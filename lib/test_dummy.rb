@@ -122,18 +122,7 @@ module TestDummy
     # the dummy operation is completed. Returns a dummy model which has not
     # been saved.
     def build_dummy(with_attributes = nil)
-      unless (defined?(@_dummy_module))
-        @_dummy_module =
-          begin
-            dummy_path = File.expand_path("test/dummy/#{name.underscore}.rb", Rails.root)
-            
-            if (File.exist?(dummy_path))
-              require dummy_path
-            end
-          rescue LoadError
-            false
-          end
-      end
+      load_dummy_declaration!
       
       model = new(TestDummy::Support.combine_attributes(scoped.scope_for_create, with_attributes))
 
@@ -203,6 +192,8 @@ module TestDummy
     # This performs the dummy operation on a model with an optional set
     # of parameters.
     def execute_dummy_operation(model, with_attributes = nil)
+      load_dummy_declaration!
+      
       return model unless (@test_dummy_order)
       
       @test_dummy_order.each do |name|
@@ -221,6 +212,21 @@ module TestDummy
     end
     
   protected
+    def load_dummy_declaration!
+      return if (defined?(@_dummy_module))
+
+      @_dummy_module =
+        begin
+          dummy_path = File.expand_path("test/dummy/#{name.underscore}.rb", Rails.root)
+      
+          if (File.exist?(dummy_path))
+            require dummy_path
+          end
+        rescue LoadError
+          false
+        end
+    end
+
     def dummy_method_call(model, with_attributes, block)
       case (block.arity)
       when 2, -1
