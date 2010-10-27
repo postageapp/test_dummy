@@ -22,6 +22,26 @@ declare how to dummy something:
       dummy :nickname, :use => :random_phonetic_string
     end
 
+Dummy configuration can also be stored in test/dummy to avoid cluttering
+your models up with generators. An equivalent external declaration would look
+like this:
+
+    TestDummy.declare(MyModel) do
+      dummy :name do
+        "user%d" % rand(10e6)
+      end
+    
+      dummy :password, :password_confirmation do
+        'tester'
+      end
+    
+      dummy :nickname, :use => :random_phonetic_string
+    end
+
+The name of the test/dummy file should be the same as the main model
+defined in app/models. For instance, app/models/my_model.rb would have a
+corresponding test/dummy/my_model.rb that would be loaded as required.
+
 == Copyright
 
 Copyright (c) 2010 Scott Tadman, The Working Group

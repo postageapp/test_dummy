@@ -125,7 +125,7 @@ module TestDummy
       unless (defined?(@_dummy_module))
         @_dummy_module =
           begin
-            dummy_path = File.expand_path("models/dummy/#{name.underscore}.rb", Rails.root)
+            dummy_path = File.expand_path("test/dummy/#{name.underscore}.rb", Rails.root)
             
             if (File.exist?(dummy_path))
               require dummy_path
