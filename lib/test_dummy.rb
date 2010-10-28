@@ -229,7 +229,7 @@ module TestDummy
 
     def dummy_method_call(model, with_attributes, block)
       case (block.arity)
-      when 2, -1
+      when 2
         block.call(model, with_attributes)
       when 1
         block.call(model)
