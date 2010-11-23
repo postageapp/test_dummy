@@ -213,14 +213,14 @@ module TestDummy
     
   protected
     def load_dummy_declaration!
-      return if (defined?(@_dummy_module))
+      return unless (@_dummy_module.nil?)
 
       @_dummy_module =
         begin
           dummy_path = File.expand_path("test/dummy/#{name.underscore}.rb", Rails.root)
       
           if (File.exist?(dummy_path))
-            require dummy_path
+            load dummy_path
           end
         rescue LoadError
           false
