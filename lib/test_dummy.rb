@@ -124,7 +124,9 @@ module TestDummy
     def build_dummy(with_attributes = nil)
       load_dummy_declaration!
       
-      model = new(TestDummy::Support.combine_attributes(scoped.scope_for_create, with_attributes))
+      build_scope = (method(:scoped).arity == 1) ? scoped(nil).scope(:create) : scoped.scope_for_create
+      
+      model = new(TestDummy::Support.combine_attributes(build_scope, with_attributes))
 
       yield(model) if (block_given?)
 
