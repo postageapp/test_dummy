@@ -253,11 +253,11 @@ module TestDummy
       when true
         # Configure association dummyr the first time it is called
         if (reflection = reflect_on_association(name))
-          primary_key = reflection.primary_key_name.to_sym
+          foreign_key = reflection.respond_to?(:foreign_key) ? reflection.foreign_key.to_sym : reflection.primary_key_name.to_sym
 
           @test_dummy[name] =
             lambda do |model, with_attributes|
-              (with_attributes and with_attributes.key?(primary_key)) ? nil : reflection.klass.send(:create_dummy)
+              (with_attributes and with_attributes.key?(foreign_key)) ? nil : reflection.klass.send(:create_dummy)
             end
         else
           raise "Cannot dummy unknown relationship #{name}"
