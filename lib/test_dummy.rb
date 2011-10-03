@@ -253,7 +253,7 @@ module TestDummy
       when true
         # Configure association dummyr the first time it is called
         if (reflection = reflect_on_association(name))
-          foreign_key = reflection.respond_to?(:foreign_key) ? reflection.foreign_key.to_sym : reflection.primary_key_name.to_sym
+          foreign_key = (reflection.respond_to?(:foreign_key) ? reflection.foreign_key : reflection.primary_key_name).to_sym
 
           @test_dummy[name] =
             lambda do |model, with_attributes|

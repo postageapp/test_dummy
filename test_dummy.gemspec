@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = "test_dummy"
-  s.version = "0.2.7"
+  s.version = "0.2.8"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["tadman"]
-  s.date = "2011-09-21"
+  s.date = "2011-10-03"
   s.description = "Test Dummy allows you to define how to fake models automatically so that you can use dummy data for testing instead of fixtures. Dummy models are always generated using the current schema and don't need to me migrated like fixtures."
   s.email = "github@tadman.ca"
   s.extra_rdoc_files = [
