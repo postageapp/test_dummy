@@ -1,5 +1,8 @@
 module TestDummy
-  require 'test_dummy/railtie'
+  if (defined?(Rails))
+    # Only load the Railtie if Rails is loaded.
+    require 'test_dummy/railtie'
+  end
 
   autoload(:Helper, File.expand_path('test_dummy/helper', File.dirname(__FILE__)))
   autoload(:TestHelper, File.expand_path('test_dummy/test_helper', File.dirname(__FILE__)))
