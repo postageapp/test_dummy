@@ -42,6 +42,11 @@ The name of the test/dummy file should be the same as the main model
 defined in app/models. For instance, app/models/my_model.rb would have a
 corresponding test/dummy/my_model.rb that would be loaded as required.
 
+If you need to override this directory, you can configure the gem using
+the `dummy_directory` option:
+
+    TestDummy.dummy_directory = 'my_alternate/path'
+
 == Copyright
 
-Copyright (c) 2010 Scott Tadman, The Working Group
+Copyright (c) 2010-2011 Scott Tadman, The Working Group

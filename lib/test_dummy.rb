@@ -6,6 +6,14 @@ module TestDummy
 
   autoload(:Helper, File.expand_path('test_dummy/helper', File.dirname(__FILE__)))
   autoload(:TestHelper, File.expand_path('test_dummy/test_helper', File.dirname(__FILE__)))
+  
+  def self.dummy_directory
+    @dummy_directory or (defined?(Rails) and Rails.root)
+  end
+  
+  def self.dummy_directory=(value)
+    @dummy_directory = value
+  end
 
   def self.included(base)
     base.send(:extend, ClassMethods)
@@ -222,7 +230,10 @@ module TestDummy
 
       @_dummy_module =
         begin
-          dummy_path = File.expand_path("test/dummy/#{name.underscore}.rb", Rails.root)
+          dummy_path = File.expand_path(
+            "test/dummy/#{name.underscore}.rb",
+            self.class.dummy_directory
+          )
       
           if (File.exist?(dummy_path))
             load dummy_path
