@@ -232,7 +232,7 @@ module TestDummy
         begin
           dummy_path = File.expand_path(
             "test/dummy/#{name.underscore}.rb",
-            self.class.dummy_directory
+            TestDummy.dummy_directory
           )
       
           if (File.exist?(dummy_path))
