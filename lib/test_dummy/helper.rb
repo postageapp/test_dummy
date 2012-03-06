@@ -16,7 +16,7 @@ module TestDummy::Helper
       string = ''
 
       length.times do
-        string << CHARACTER_SET[rand(CHARACTER_SET.length)]
+        string << ALPHANUMERIC_SET[rand(ALPHANUMERIC_SET.length)]
       end
       
       # As it's not especially hard to find a random word that passes this
