@@ -1,11 +1,15 @@
 .DS_Store
-
 *.gem
+Gemfile.lock
+
+db/*.sqlite3
 
 *.tmproj
 tmtags
 
+log
 test/log
+test/unit/log
 
 *~
 \#*
@@ -16,4 +20,3 @@ test/log
 coverage
 rdoc
 pkg
-

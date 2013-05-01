@@ -3,10 +3,14 @@ require 'test/unit'
 
 ENV['RAILS_ENV'] = 'test'
 
-$LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
-$LOAD_PATH.unshift(File.dirname(__FILE__))
+base_path = File.dirname(__FILE__)
+
+$LOAD_PATH.unshift(base_path)
+$LOAD_PATH.unshift(File.join(base_path, '..', 'lib'))
+$LOAD_PATH.unshift(File.join(base_path, '..', 'test', 'models'))
 
 gem 'rails'
+
 require 'rails'
 require 'active_record'
 
@@ -15,13 +19,32 @@ require 'test_dummy'
 TestDummy::Railtie.apply!
 
 class Test::Unit::TestCase
+  include TestDummy::TestHelper
 end
 
-module TestDummy
-  class Application < Rails::Application
-    config.active_support.deprecation = :warn
+class TestDummy::Application < Rails::Application
+  config.active_support.deprecation = :warn
+end
+
+TestDummy.dummy_extensions_path = File.expand_path('dummy', File.dirname(__FILE__))
+
+ActiveRecord::Base.establish_connection(
+  'adapter' => "sqlite3",
+  'database' => File.expand_path('db/test.sqlite3', base_path)
+)
+
+ActiveRecord::Migrator.migrate(File.expand_path('db/migrate', base_path))
+
+ActiveSupport::Dependencies.autoload_paths << File.expand_path('models', base_path)
+
+# Trigger loading the Rails root path here
+Rails.root
+
+TestDummy.define do
+  dummy :description,
+    :with => :phonetic_string
+
+  dummy :phonetic_string do
+    TestDummy::Helper.random_phonetic_string(32)
   end
 end
-
-TestDummy::Application.initialize!
-ActiveRecord::Base.establish_connection(Rails.env)
