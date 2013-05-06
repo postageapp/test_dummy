@@ -21,7 +21,9 @@ declare how to dummy something.
 To add Test Dummy functionality to an application, add the dependency to the
 `Gemfile`:
 
-  gem 'test_dummy'
+```ruby
+gem 'test_dummy'
+```
 
 Most application frameworks provide some kind of test helper foundation,
 like `test/test_helper.rb` in Rails or `test/helper.rb` in many gem templates.

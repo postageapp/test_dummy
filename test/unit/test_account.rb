@@ -17,5 +17,9 @@ class TestAccount < ActiveSupport::TestCase
 
     assert_equal [ ], account.bills.collect(&:ids)
     assert_equal [ ], account.items.collect(&:ids)
+
+    assert_equal account.field_a, account.field_b
+
+    assert account.field_c?
   end
 end

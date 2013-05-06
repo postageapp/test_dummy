@@ -9,6 +9,14 @@ class Account
     account.source = 'dummy'
   end
 
+  dummy :field_a, :field_b do
+    TestDummy::Helper.random_string(8)
+  end
+
+  dummy do |m|
+    m.field_c = TestDummy::Helper.random_string(8)
+  end
+
   dummy :activated_at, :except => :unactivated do
     Time.now - rand(86400 * 365) - 86400
   end
