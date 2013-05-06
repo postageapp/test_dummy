@@ -1,14 +1,24 @@
 module TestDummy
+  # == Submodules ============================================================
+
+  autoload(:Helper, 'test_dummy/helper')
+  autoload(:Support, 'test_dummy/support')
+  autoload(:TestHelper, 'test_dummy/test_helper')
+
+  # == Rails Hook ============================================================
+
+  # Only load the Railtie if Rails is loaded.
   if (defined?(Rails))
-    # Only load the Railtie if Rails is loaded.
     require 'test_dummy/railtie'
   end
 
+  # == Utility Classes ======================================================
+
+  # TestDummy::Exception is thrown instead of the master exception type.
   class Exception < ::Exception
   end
 
-  autoload(:Helper, File.expand_path('test_dummy/helper', File.dirname(__FILE__)))
-  autoload(:TestHelper, File.expand_path('test_dummy/test_helper', File.dirname(__FILE__)))
+  # == Module Methods =======================================================
 
   # Returns the current path used to load dummy extensions into models, or
   # nil if no path is currently defined. Defaults to "test/dummy" off of the
@@ -23,6 +33,8 @@ module TestDummy
     end
   end
   
+  # Defines the dummy extension path. The full path to the destination should
+  # be specified.
   def self.dummy_extensions_path=(value)
     @dummy_extensions_path = value
   end
@@ -34,47 +46,6 @@ module TestDummy
   
   def self.declare(on_class, &block)
     on_class.instance_eval(&block)
-  end
-  
-  module Support
-    # Combines several sets of parameters together into a single set in order
-    # of lowest priority to highest priority. Supplied list can contain nil
-    # values which will be ignored. Returns a Hash with symbolized keys.
-    def self.combine_attributes(*sets)
-      combined_attributes = { }
-    
-      # Apply sets in order they are listed
-      sets.compact.each do |set|
-        set.each do |k, v|
-          case (v)
-          when nil
-            # Ignore nil assignments
-          else
-            combined_attributes[k.to_sym] = v
-          end
-        end
-      end
-
-      combined_attributes
-    end
-
-    # This method is used to provide a unified interface to the otherwise
-    # irregular methods to discover information on assocations. Rails 3
-    # introduces a new method. Returns the reflected class and foreign key
-    # properties for a named attribute, or nil if no association could be found.
-    def self.reflection_properties(model_class, attribute)
-      if (model_class.respond_to?(:reflect_on_association) and reflection = model_class.reflect_on_association(attribute))
-        [
-          reflection.klass,
-          (reflection.respond_to?(:foreign_key) ? reflection.foreign_key : reflection.primary_key_name).to_sym
-        ]
-      elsif (model_class.respond_to?(:association_reflection) and reflection = model_class.association_reflection(attribute))
-        [
-          reflection[:associated_class],
-          reflection[:key] || :"#{attribute.to_s.underscore}_id"
-        ]
-      end
-    end
   end
 
   # Adds a mixin to the core Helper module
@@ -141,6 +112,7 @@ module TestDummy
       
       @test_dummy ||= { }
       @test_dummy_order ||= [ ]
+      @test_dummy_tags ||= { }
       
       names.flatten.each do |name|
         name = name.to_sym
@@ -148,6 +120,26 @@ module TestDummy
         create_options_proc = nil
 
         if (options)
+          if (options[:only])
+            tags = [ options[:only] ].flatten.compact
+              
+            if (tags.any?)
+              set = @test_dummy_tags[name] ||= { }
+              
+              set[:only] = tags
+            end
+          end
+
+          if (options[:except])
+            tags = [ options[:except] ].flatten.compact
+              
+            if (tags.any?)
+              set = @test_dummy_tags[name] ||= { }
+              
+              set[:except] = tags
+            end
+          end
+
           if (options[:with])
             if (block)
               raise TestDummy::Exception, "Cannot use block and :with option at the same time."
@@ -215,10 +207,10 @@ module TestDummy
             end
           end
 
-          block = lambda do |model, with_attributes|
-            reflection_class, foreign_key = TestDummy::Support.reflection_properties(self, name)
+          reflection_class, foreign_key = TestDummy::Support.reflection_properties(self, name)
 
-            if (reflection_class and foreign_key)
+          if (reflection_class and foreign_key)
+            block = lambda do |model, with_attributes|
               unless ((with_attributes and (with_attributes.key?(name) or with_attributes.key?(foreign_key))) or model.send(name).present?)
                 object = from && from.inject(model) do |_model, _method|
                   _model ? _model.send(_method) : nil
@@ -260,7 +252,7 @@ module TestDummy
     # new model is provided to the optional block for manipulation before
     # the dummy operation is completed. Returns a dummy model which has not
     # been saved.
-    def build_dummy(with_attributes = nil)
+    def build_dummy(with_attributes = nil, tags = nil)
       load_dummy_declaration!
       
       build_scope = (method(:scoped).arity == 1) ? scoped(nil).scope(:create) : scoped.scope_for_create
@@ -269,7 +261,7 @@ module TestDummy
 
       yield(model) if (block_given?)
 
-      self.execute_dummy_operation(model, with_attributes)
+      self.execute_dummy_operation(model, with_attributes, tags)
       
       model
     end
@@ -279,8 +271,12 @@ module TestDummy
     # the dummy operation is completed and the model is saved. Returns a
     # dummy model. The model may not have been saved if there was a
     # validation failure, or if it was blocked by a callback.
-    def create_dummy(with_attributes = nil, &block)
-      model = build_dummy(with_attributes, &block)
+    def create_dummy(*args, &block)
+      if (args.last.is_a?(Hash))
+        with_attributes = args.pop
+      end
+
+      model = build_dummy(with_attributes, args, &block)
       
       model.save
       
@@ -293,8 +289,12 @@ module TestDummy
     # dummy model. Will throw ActiveRecord::RecordInvalid if there was al20
     # validation failure, or ActiveRecord::RecordNotSaved if the save was
     # blocked by a callback.
-    def create_dummy!(with_attributes = nil, &block)
-      model = build_dummy(with_attributes, &block)
+    def create_dummy!(*args, &block)
+      if (args.last.is_a?(Hash))
+        with_attributes = args.pop
+      end
+
+      model = build_dummy(with_attributes, args, &block)
       
       model.save!
       
@@ -310,20 +310,24 @@ module TestDummy
     
     # Produces a complete set of dummy attributes. These can be used to
     # create a model.
-    def dummy_attributes(with_attributes = nil)
+    def dummy_attributes(with_attributes = nil, tags = nil)
       with_attributes = TestDummy.combine_attributes(scoped.scope_for_create, with_attributes)
       
       @test_dummy_order.each do |field|
-        unless (with_attributes.key?(field))
-          result = dummy(field, with_attributes)
-          
-          case (result)
-          when nil, with_attributes
-            # Declined to populate parameters if method returns nil
-            # or returns the existing parameter set.
-          else
-            with_attributes[field] = result
-          end
+        next if (with_attributes.key?(field))
+
+        if (when_tagged = @test_dummy_when[field])
+          next if (!tags or (tags & when_tagged).empty?)
+        end
+
+        result = dummy(field, with_attributes)
+        
+        case (result)
+        when nil, with_attributes
+          # Declined to populate parameters if method returns nil
+          # or returns the existing parameter set.
+        else
+          with_attributes[field] = result
         end
       end
       
@@ -332,12 +336,22 @@ module TestDummy
     
     # This performs the dummy operation on a model with an optional set
     # of parameters.
-    def execute_dummy_operation(model, with_attributes = nil)
+    def execute_dummy_operation(model, with_attributes = nil, tags = nil)
       load_dummy_declaration!
       
       return model unless (@test_dummy_order)
-      
+
       @test_dummy_order.each do |name|
+        if (tag_conditions = @test_dummy_tags[name])
+          if (required_tags = tag_conditions[:only])
+            next if (!tags or (tags & required_tags).empty?)
+          end
+
+          if (excluding_tags = tag_conditions[:except])
+            next if (tags and (tags & excluding_tags).any?)
+          end
+        end
+
         if (respond_to?(:reflect_on_association) and reflection = reflect_on_association(name))
           foreign_key = (reflection.respond_to?(:foreign_key) ? reflection.foreign_key : reflection.primary_key_name).to_sym
           

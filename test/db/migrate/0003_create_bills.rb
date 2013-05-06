@@ -3,6 +3,7 @@ class CreateBills < ActiveRecord::Migration
     create_table :bills do |t|
       t.integer :account_id
       t.date :order_date
+      t.date :due_date
       t.timestamps
     end
   end

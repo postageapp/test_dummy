@@ -34,4 +34,22 @@ class TestBill < ActiveSupport::TestCase
 
     assert_equal [ bill.id ], account.bills.collect(&:id)
   end
+
+  def test_with_overdue_tag
+    account = an Account
+
+    bill = Bill.create_dummy(:overdue, :account => account)
+
+    assert bill
+    assert_equal true, bill.valid?
+    assert_equal false, bill.new_record?
+
+    assert bill.due_date
+
+    assert_equal true, bill.overdue?
+
+    assert_equal account.id, bill.account_id
+
+    assert_equal [ bill.id ], account.bills.collect(&:id)
+  end
 end
