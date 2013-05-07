@@ -8,48 +8,14 @@ class TestDummy::Operation
   # == Instance Methods =====================================================
 
   def initialize(options)
-    flatten_to_key_if_any(operation, options, :only)
-    flatten_to_key_if_any(operation, options, :except)
+    assign_only_options!(options)
+    assign_except_options!(options)
 
-    merge_with_options!(operation, options)
-    merge_inherit_options!(operation, options)
+    assign_with_options!(options)
+    assign_inherit_options!(options)
 
     # The :inherit directive is used to pass arguments through to the
     # create_dummy call on the association's class.
-    if (inherit = options[:inherit])
-      TestDummy::OptionsConverter.import_inherit_options(operation, :inherit, options[:inherit])
-      operation[:inherit] = 
-
-      Hash[
-        inherit.collect do |attribute, spec|
-          [
-            attribute.to_sym,
-            case (spec)
-            when Array
-              spec.collect(&:to_sym)
-            when String
-              spec.split('.').collect(&:to_sym)
-            when Proc
-              spec
-            end
-          ]
-        end
-      ]
-
-      create_options_proc = lambda do |target, model, with_attributes|
-        operation[:inherit].each do |attribute, spec|
-          target[attribute] ||=
-            case (spec)
-            when Array
-              spec.inject(model) do |_model, _method|
-                _model ? _model.send(_method) : nil
-              end
-            when Proc
-              proc.call(model, with_attributes)
-            end
-        end
-      end
-    end
 
     if (from = options[:from])
       if (block)
@@ -69,6 +35,81 @@ class TestDummy::Operation
     end
   end
 
-  def blah
+protected
+  def flatten_any(options, key)
+    array = options[key]
+
+    return unless (array)
+
+    array = array.flatten.compact.collect(&:to_sym)
+
+    return unless (array.any?)
+
+    array
+  end
+
+  def assign_only_options!(options)
+    @only = flatten_any(options, :only)
+  end
+
+  def assign_except_options!
+    @except = flatten_any(options, :except)
+  end
+
+  def assign_with_options!(options)
+    if (with = options[:with])
+      if (@block)
+        raise TestDummy::Exception, "Cannot use block and :with option at the same time."
+      end
+
+      @block = block_for_with_option(with)
+    end
+  end
+
+  def block_for_with_option(with)
+    case (with)
+    when Proc
+      with
+    when String, Symbol
+      lambda { send(with) }
+    else
+      lambda { with }
+    end
+  end
+
+  def assign_inherit_options!(options)
+    inherit = options[:inherit]
+
+    return unless (inherit)
+
+    @inherit = Hash[
+      inherit.collect do |attribute, spec|
+        [
+          attribute.to_sym,
+          case (spec)
+          when Array
+            spec.collect(&:to_sym)
+          when String
+            spec.split('.').collect(&:to_sym)
+          when Proc
+            spec
+          end
+        ]
+      end
+    ]
+
+    @create_options_proc = lambda do |target, model, with_attributes|
+      @inherit.each do |attribute, spec|
+        target[attribute] ||=
+          case (spec)
+          when Array
+            spec.inject(model) do |_model, _method|
+              _model ? _model.send(_method) : nil
+            end
+          when Proc
+            proc.call(model, with_attributes)
+          end
+      end
+    end
   end
 end

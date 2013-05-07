@@ -26,10 +26,12 @@ class TestDummy::Definition
     ]
     
     @operations.each do |operation|
-      if (operation_fields = operation[:fields])
-        operation_fields.each do |field|
-          fields[field] = true
-        end
+      operation_fields = operation[:fields]
+
+      next unless (operation_fields)
+
+      operation_fields.each do |field|
+        fields[field] = true
       end
     end
 
@@ -42,12 +44,11 @@ class TestDummy::Definition
     from = nil
     create_options_proc = nil
 
-    operation = TestDummy::Operation.new(options, &block)
+    @operations << TestDummy::Operation.new(options, &block)
 
     if (block_given?)
       operation[:block] = proc
     end
-
 
     if (fields.any?)
       if (operation[:block])
@@ -86,34 +87,4 @@ class TestDummy::Definition
   end
 
 protected
-  def flatten_to_key_if_any(hash, options, key)
-    if (array = options[key])
-      array = array.flatten.compact.collect(&:to_sym)
-
-      if (array.any?)
-        hash[key] = array
-      end
-    end
-  end
-
-  def add_with_options!(operation, options)
-    if (with = options[:with])
-      if (operation[:block])
-        raise TestDummy::Exception, "Cannot use block and :with option at the same time."
-      end
-
-      operation[:block] = block_for_with_option(with)
-    end
-  end
-
-  def block_for_with_option(with)
-    case (with)
-    when Proc
-      with
-    when String, Symbol
-      lambda { send(with) }
-    else
-      lambda { with }
-    end
-  end
 end
