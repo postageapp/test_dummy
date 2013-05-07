@@ -69,6 +69,7 @@ module TestDummy
       options = fields.pop
     end
     
+    # REFACTOR: Adapt to new Operation style
     if (options and options[:with])
       with = options[:with]
 
@@ -112,9 +113,13 @@ module TestDummy
         options = fields.pop
       end
 
+      if (block_given?)
+        options = options.merge(:block => Proc.new)
+      end
+
       fields = fields.flatten.collect(&:to_sym)
 
-      self.dummy_definition.define_operation(fields, options)
+      self.dummy_definition.define_operation(self, fields, options)
     end
     
     # Returns true if all the supplied attribute fields have defined
@@ -187,14 +192,6 @@ module TestDummy
       return model unless (@test_dummy_order)
 
       @test_dummy.each do |definition|
-        if (required_tags = definition[:only])
-          next if (!tags or (tags & required_tags).empty?)
-        end
-
-        if (excluding_tags = definition[:except])
-          next if (tags and (tags & excluding_tags).any?)
-        end
-
         assignments = nil
 
         if (fields = definition[:fields])

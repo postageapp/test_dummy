@@ -40,49 +40,34 @@ class TestDummy::Definition
     end
   end
 
-  def define_operation(fields, options, &block)
-    from = nil
-    create_options_proc = nil
-
-    @operations << TestDummy::Operation.new(options, &block)
-
-    if (block_given?)
-      operation[:block] = proc
-    end
-
+  def define_operation(model, fields, options)
     if (fields.any?)
-      if (operation[:block])
-        operation[:fields] = fields
-        @test_dummy << operation
-      else
-        remainder = fields.reject do |field|
-          reflection_class, foreign_key = TestDummy::Support.reflection_properties(self, field)
+      fields.each do |field|
+        field_options = options.merge(
+          :fields => [ field ]
+        )
 
-          if (reflection_class and foreign_key)
-            field_operation = operation.dup
+        class_name, foreign_key = TestDummy::Support.reflection_properties(model, field)
 
-            field_operation[:block] ||= lambda do |model, with_attributes|
-              unless ((with_attributes and (with_attributes.key?(field) or with_attributes.key?(foreign_key))) or model.send(field).present?)
-                object = from && from.inject(model) do |_model, _method|
-                  _model ? _model.send(_method) : nil
-                end
-
-                reflection_class.create_dummy do |target|
-                  if (create_options_proc)
-                    create_options_proc.call(target, model, with_attributes)
-                  end
-                end
-              end
-            end
-          end
+        if (class_name and foreign_key)
+          field_options[:class_name] ||= class_name
+          field_options[:foreign_key] ||= foreign_key
         end
-      end
 
-      if (remainder.any?)
-        @test_dummy << operation
+        options.merge(
+          :fields => [ field ]
+        )
+
+        @operations << TestDummy::Operation.new(field_options)
       end
     else
-      @test_dummy << operation
+      @operations << TestDummy::Operation.new(options)
+    end
+  end
+
+  def apply!(model, with_options, tags)
+    @operations.each do |operation|
+      operation.apply!(model, with_options, tags)
     end
   end
 
