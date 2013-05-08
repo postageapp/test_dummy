@@ -1,7 +1,9 @@
 class TestDummy::Definition
   # == Extensions ===========================================================
   
-  # == Constants ============================================================
+  # == Properties ===========================================================
+
+  attr_reader :operations
   
   # == Class Methods ========================================================
   
@@ -11,37 +13,53 @@ class TestDummy::Definition
     @operations = operations ? operations.dup : [ ]
   end
 
+  # Applies the operations defined in this definition to the model supplied,
+  # taking into account any options used for creation and only triggering based
+  # on the tags specified.
+  def apply!(model, create_options, tags)
+    @operations.each do |operation|
+      operation.apply!(model, create_options, tags)
+    end
+
+    true
+  end
+
+  # Creates a copy of this Definition.
   def clone
     self.class.new(@operations)
   end
   alias_method :dup, :clone
 
-  def can_dummy_fields
+  # Returns a list of fields that could be populated with dummy data when the
+  # given tags are employed.
+  def fields(*tags)
+    tags = tags.flatten.compact
+
     @operations.each_with_object([ ]) do |operation, collection|
-      collection += operation.fields
+      collection.concat(operation.fields(tags))
     end.compact.uniq
   end
 
-  def can_dummy?(*fields)
-    return false unless (@test_dummy)
-
-    fields = Hash[
-      fields.flatten.compact.collect do |field|
+  def fields?(*matching_fields)
+    matching_fields = Hash[
+      matching_fields.flatten.compact.collect do |field|
         [ field.to_sym, false ]
       end
     ]
     
     @operations.each do |operation|
-      operation_fields = operation[:fields]
+      operation_fields = operation.fields
 
       next unless (operation_fields)
 
       operation_fields.each do |field|
-        fields[field] = true
+        next unless (field)
+
+        matching_fields[field] = true
       end
     end
 
-    !fields.find do |field, found|
+    !matching_fields.find do |field, found|
       !found
     end
   end
@@ -50,7 +68,7 @@ class TestDummy::Definition
     if (fields.any?)
       fields.each do |field|
         field_options = options.merge(
-          :fields => [ field ]
+          :fields => [ field ].flatten.collect(&:to_sym)
         )
 
         class_name, foreign_key = TestDummy::Support.reflection_properties(model_class, field)
@@ -59,10 +77,6 @@ class TestDummy::Definition
           field_options[:class_name] ||= class_name
           field_options[:foreign_key] ||= foreign_key
         end
-
-        options.merge(
-          :fields => [ field ]
-        )
 
         @operations << TestDummy::Operation.new(field_options)
       end
@@ -73,11 +87,5 @@ class TestDummy::Definition
 
   def <<(operation)
     @operations << operation
-  end
-
-  def apply!(model, with_options, tags)
-    @operations.each do |operation|
-      operation.apply!(model, with_options, tags)
-    end
   end
 end

@@ -29,6 +29,22 @@ class TestOperation < Test::Unit::TestCase
     assert_equal nil, operation.foreign_key
   end
 
+  def test_with_option
+    operation = TestDummy::Operation.new(
+      :fields => [ :field ],
+      :with => :random_string
+    )
+
+    assert_equal true, TestDummy::Helper.respond_to?(:random_string)
+
+    model = MockModelExample.new
+
+    operation.apply!(model, { }, [ ])
+
+    assert model.field
+    assert_equal 12, model.field.length
+  end
+
   def test_with_fields
     operation = TestDummy::Operation.new(
       :fields => [ :field, :field_id ]
@@ -37,13 +53,17 @@ class TestOperation < Test::Unit::TestCase
     assert_equal [ :field, :field_id ], operation.fields
   end
 
-  def test_block_with_only_tags
+  def test_block_with_only_tag
     triggered = 0
 
     operation = TestDummy::Operation.new(
-      :only => [ :test_tag ],
+      :only => :test_tag,
       :block => lambda { triggered += 1 }
     )
+
+    assert_equal [ ], operation.fields(nil)
+    assert_equal [ ], operation.fields([ ])
+    assert_equal [ nil ], operation.fields([ :test_tag ])
 
     assert_equal [ :test_tag ], operation.only
     assert_equal nil, operation.except
@@ -59,6 +79,34 @@ class TestOperation < Test::Unit::TestCase
     operation.apply!(nil, { }, [ :test_tag ])
 
     assert_equal 1, triggered
+  end
+
+  def test_block_with_multiple_only_tags
+    triggered = 0
+
+    operation = TestDummy::Operation.new(
+      :only => [ :first_tag, :second_tag ],
+      :block => lambda { triggered += 1 }
+    )
+
+    assert_equal [ ], operation.fields(nil)
+    assert_equal [ ], operation.fields([ ])
+    assert_equal [ nil ], operation.fields([ :first_tag ])
+    assert_equal [ nil ], operation.fields([ :second_tag ])
+    assert_equal [ nil ], operation.fields([ :first_tag, :second_tag ])
+
+    assert_equal [ :first_tag, :second_tag ], operation.only
+    assert_equal nil, operation.except
+
+    assert_equal [ ], operation.assignments(nil, { }, [ ])
+
+    operation.apply!(nil, { }, [ ])
+
+    assert_equal 0, triggered
+
+    assert_equal [ nil ], operation.assignments(nil, { }, [ :first_tag ])
+    assert_equal [ nil ], operation.assignments(nil, { }, [ :second_tag ])
+    assert_equal [ nil ], operation.assignments(nil, { }, [ :first_tag, :second_tag ])
   end
 
   def test_block_with_only_tags_with_fields
@@ -82,6 +130,132 @@ class TestOperation < Test::Unit::TestCase
     assert_equal [ :test_field ], operation.assignments(nil, { }, [ :test_tag ])
 
     operation.apply!(nil, { }, [ :test_tag ])
+
+    assert_equal 1, triggered
+  end
+
+  def test_block_with_except_tags
+    triggered = 0
+
+    operation = TestDummy::Operation.new(
+      :except => [ :test_tag ],
+      :block => lambda { triggered += 1 }
+    )
+
+    assert_equal nil, operation.only
+    assert_equal [ :test_tag ], operation.except
+
+    assert_equal [ nil ], operation.assignments(nil, { }, [ ])
+
+    operation.apply!(nil, { }, [ ])
+
+    assert_equal 1, triggered
+
+    assert_equal [ ], operation.assignments(nil, { }, [ :test_tag ])
+
+    operation.apply!(nil, { }, [ :test_tag ])
+
+    assert_equal 1, triggered
+  end
+
+  def test_block_with_except_tags_with_fields
+    triggered = 0
+
+    operation = TestDummy::Operation.new(
+      :fields => [ :test_field ],
+      :except => [ :test_tag ],
+      :block => lambda { triggered += 1 }
+    )
+
+    assert_equal nil, operation.only
+    assert_equal [ :test_tag ], operation.except
+
+    assert_equal [ :test_field ], operation.assignments(nil, { }, [ ])
+
+    operation.apply!(nil, { }, [ ])
+
+    assert_equal 1, triggered
+
+    assert_equal [ ], operation.assignments(nil, { }, [ :test_tag ])
+
+    operation.apply!(nil, { }, [ :test_tag ])
+
+    assert_equal 1, triggered
+  end
+
+  def test_block_with_only_and_except_tags
+    triggered = 0
+
+    operation = TestDummy::Operation.new(
+      :only => [ :only_tag ],
+      :except => [ :except_tag ],
+      :block => lambda { triggered += 1 }
+    )
+
+    assert_equal [ :only_tag ], operation.only
+    assert_equal [ :except_tag ], operation.except
+
+    assert_equal [ ], operation.assignments(nil, { }, [ ])
+    assert_equal [ nil ], operation.assignments(nil, { }, [ :only_tag ])
+    assert_equal [ ], operation.assignments(nil, { }, [ :except_tag ])
+    assert_equal [ ], operation.assignments(nil, { }, [ :only_tag, :except_tag ])
+    assert_equal [ ], operation.assignments(nil, { }, [ :except_tag, :only_tag ])
+    assert_equal [ ], operation.assignments(nil, { }, [ :except_tag, :only_tag, :irrelevant_tag ])
+    assert_equal [ nil ], operation.assignments(nil, { }, [ :only_tag, :irrelevant_tag ])
+
+    operation.apply!(nil, { }, [ ])
+
+    assert_equal 0, triggered
+
+    operation.apply!(nil, { }, [ :only_tag ])
+
+    assert_equal 1, triggered
+
+    operation.apply!(nil, { }, [ :except_tag ])
+
+    assert_equal 1, triggered
+
+    operation.apply!(nil, { }, [ :only_tag, :except_tag ])
+
+    assert_equal 1, triggered
+  end
+
+  def test_block_with_only_and_except_tags_with_fields
+    triggered = 0
+
+    operation = TestDummy::Operation.new(
+      :fields => [ :test_field ],
+      :only => [ :only_tag ],
+      :except => [ :except_tag ],
+      :block => lambda { triggered += 1 }
+    )
+
+    assert_equal [ :only_tag ], operation.only
+    assert_equal [ :except_tag ], operation.except
+
+    assert_equal [ ], operation.assignments(nil, { }, [ ])
+
+    operation.apply!(nil, { }, [ ])
+
+    assert_equal 0, triggered
+
+    assert_equal [ ], operation.assignments(nil, { }, [ ])
+    assert_equal [ :test_field ], operation.assignments(nil, { }, [ :only_tag ])
+    assert_equal [ ], operation.assignments(nil, { }, [ :except_tag ])
+    assert_equal [ ], operation.assignments(nil, { }, [ :only_tag, :except_tag ])
+    assert_equal [ ], operation.assignments(nil, { }, [ :except_tag, :only_tag ])
+    assert_equal [ ], operation.assignments(nil, { }, [ :except_tag, :only_tag, :irrelevant_tag ])
+    assert_equal [ :test_field ], operation.assignments(nil, { }, [ :only_tag, :irrelevant_tag ])
+
+    operation.apply!(nil, { }, [ :except_tag ])
+
+    assert_equal 0, triggered
+
+    operation.apply!(nil, { }, [ :except_tag, :only_tag ])
+
+    assert_equal 0, triggered
+
+    operation.apply!(nil, { }, [ :only_tag ])
 
     assert_equal 1, triggered
   end

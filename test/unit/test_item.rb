@@ -3,6 +3,8 @@ require File.expand_path('../helper', File.dirname(__FILE__))
 class TestItem < Test::Unit::TestCase
   def test_extension_loaded
     assert Item.respond_to?(:create_dummy)
+
+    assert TestDummy::Loader.load!(Item)
   end
 
   def test_reflection_properties
@@ -52,7 +54,11 @@ class TestItem < Test::Unit::TestCase
 
     account = bill.account
 
+    assert account
+    assert account.bills
     assert_equal [ bill.id ], account.bills.collect(&:id)
+
+    assert account.items
     assert_equal [ item.id ], account.items.collect(&:id)
   end
 end

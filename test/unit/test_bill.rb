@@ -3,6 +3,9 @@ require File.expand_path('../helper', File.dirname(__FILE__))
 class TestBill < Test::Unit::TestCase
   def test_extension_loaded
     assert Bill.respond_to?(:create_dummy)
+
+    assert_equal [ :account, :order_date ], Bill.dummy_definition.fields
+    assert_equal [ :account, :order_date, :due_date ], Bill.dummy_definition.fields(:overdue)
   end
 
   def test_create_dummy

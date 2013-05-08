@@ -1,7 +1,6 @@
 class TestDummy::Operation
   # == Properties ===========================================================
 
-  attr_reader :fields
   attr_reader :source_methods
   attr_reader :source_keys
   attr_reader :only
@@ -28,13 +27,29 @@ class TestDummy::Operation
     assign_inherit_options!(options)
   end
 
-  def assignments(model, create_options, tags)
+  def fields(tags = nil)
+    if (trigger?(tags))
+      @fields
+    else
+      [ ]
+    end
+  end
+
+  def trigger?(tags)
     if (@only)
-      return [ ] if (!tags or (tags & @only).empty?)
+      return false if (!tags or (tags & @only).empty?)
     end
 
     if (@except)
-      return [ ] if (tags and (tags & @except).any?)
+      return false if (tags and (tags & @except).any?)
+    end
+
+    true
+  end
+
+  def assignments(model, create_options, tags)
+    unless (trigger?(tags))
+      return [ ]
     end
 
     @fields.reject do |field|
@@ -71,6 +86,8 @@ class TestDummy::Operation
     end
 
     model and !value.nil? and _assignments.each do |field|
+      next unless (field)
+      
       model.__send__(:"#{field}=", value)
     end
   end
@@ -81,7 +98,7 @@ protected
 
     return unless (array)
 
-    array = array.flatten.compact.collect(&:to_sym)
+    array = [ array ].flatten.compact.collect(&:to_sym)
 
     return unless (array.any?)
 
@@ -129,7 +146,7 @@ protected
     when Proc
       with
     when String, Symbol
-      lambda { send(with) }
+      lambda { respond_to?(with) ? send(with) : TestDummy::Helper.send(with) }
     else
       lambda { with }
     end

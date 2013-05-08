@@ -11,6 +11,7 @@ class TestTestDummy < Test::Unit::TestCase
     assert_equal [ ], example.errors.full_messages
     assert !example.new_record?
     
+    assert example.name
     assert_equal 8, example.name.length
   end
 

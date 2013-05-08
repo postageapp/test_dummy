@@ -9,7 +9,7 @@ class Account
     account.source = 'dummy'
   end
 
-  dummy :field_a, :field_b do
+  dummy [ :field_a, :field_b ] do
     TestDummy::Helper.random_string(8)
   end
 

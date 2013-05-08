@@ -3,6 +3,10 @@ require File.expand_path('../helper', File.dirname(__FILE__))
 class TestAccount < Test::Unit::TestCase
   def test_extension_loaded
     assert Account.respond_to?(:create_dummy)
+
+    assert TestDummy::Loader.load!(Account)
+
+    assert_equal [ :name, :field_a, :field_b, :activated_at ], Account.dummy_definition.fields
   end
 
   def test_create_dummy

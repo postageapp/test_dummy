@@ -3,6 +3,7 @@ module TestDummy
 
   autoload(:Definition, 'test_dummy/definition')
   autoload(:Helper, 'test_dummy/helper')
+  autoload(:Loader, 'test_dummy/loader')
   autoload(:Operation, 'test_dummy/operation')
   autoload(:Support, 'test_dummy/support')
   autoload(:TestHelper, 'test_dummy/test_helper')
@@ -41,11 +42,14 @@ module TestDummy
     @dummy_extensions_path = value
   end
 
+  # This is called when this module is included.
   def self.included(base)
     base.send(:extend, ClassMethods)
     base.send(:include, InstanceMethods)
   end
   
+  # Used to dynamically declare extensions on a particular class. Has the
+  # effect of executing the block in the context of the class given.
   def self.declare(on_class, &block)
     on_class.instance_eval(&block)
   end
@@ -98,7 +102,11 @@ module TestDummy
     # Returns a Hash which describes the dummy configuration for this
     # Model class.
     def dummy_definition
-      @test_dummy ||= TestDummy::Definition.new
+      @dummy_definition ||= TestDummy::Definition.new
+
+      TestDummy::Loader.load!(self)
+
+      @dummy_definition
     end
     
     # Declares how to fake one or more attributes. Accepts a block
@@ -121,8 +129,6 @@ module TestDummy
         end
       end
 
-      fields = fields.flatten.collect(&:to_sym)
-
       self.dummy_definition.define_operation(self, fields, options)
     end
     
@@ -137,8 +143,6 @@ module TestDummy
     # the dummy operation is completed. Returns a dummy model which has not
     # been saved.
     def build_dummy(with_attributes = nil, tags = nil)
-      load_dummy_declaration!
-      
       build_scope = (method(:scoped).arity == 1) ? scoped(nil).scope(:create) : scoped.scope_for_create
 
       with_attributes = TestDummy::Support.combine_attributes(build_scope, with_attributes)
@@ -147,7 +151,7 @@ module TestDummy
 
       yield(model) if (block_given?)
 
-      self.execute_dummy_operation(model, with_attributes, tags)
+      self.dummy_definition.apply!(model, with_attributes, tags)
       
       model
     end
@@ -186,124 +190,13 @@ module TestDummy
       
       model
     end
-
-  protected
-    # This performs the dummy operation on a model with an optional set
-    # of parameters.
-    def execute_dummy_operation(model, with_attributes = nil, tags = nil)
-      load_dummy_declaration!
-      
-      return model unless (@test_dummy_order)
-
-      @test_dummy.each do |definition|
-        assignments = nil
-
-        if (fields = definition[:fields])
-          assignments = fields.select do |field|
-            if (respond_to?(:reflect_on_association) and reflection = reflect_on_association(field))
-              foreign_key = (reflection.respond_to?(:foreign_key) ? reflection.foreign_key : reflection.primary_key_field).to_sym
-              
-              (with_attributes and (with_attributes.key?(field.to_sym) or with_attributes.key?(foreign_key.to_sym))) or model.send(field).present?
-            elsif (respond_to?(:association_reflection) and reflection = association_reflection(field))
-              key = reflection[:key] || :"#{field.to_s.underscore}_id"
-
-              (with_attributes and (with_attributes.key?(field.to_sym) or with_attributes.key?(key.to_sym))) or model.send(field).present?
-            else
-              (with_attributes and (with_attributes.key?(field.to_sym) or with_attributes.key?(field.to_s)))
-            end
-          end
-        else
-          assignments = false
-        end
-
-        unless (assignments.nil?)
-          value = dummy_method_call(model, with_attributes, definition)
-
-          assignments and assignments.each do |field|
-            next unless (field)
-
-            model.send(:"#{field}=", value)
-          end
-        end
-      end
-      
-      model
-    end
-    
-    def load_dummy_declaration!
-      return unless (@_dummy_module.nil?)
-
-      @_dummy_module =
-        begin
-          dummy_path = File.expand_path(
-           "#{name.underscore}.rb",
-            TestDummy.dummy_extensions_path
-          )
-      
-          if (File.exist?(dummy_path))
-            load(dummy_path)
-          end
-        rescue LoadError
-          # Persist that this load attempt failed and don't retry later.
-          false
-        end
-    end
-
-    def dummy_method_call(model, with_attributes, block)
-      case (block.arity)
-      when 2
-        block.call(model, with_attributes)
-      when 1
-        block.call(model)
-      else
-        model.instance_eval(&block)
-      end
-    end
-    
-    def dummy_method(name)
-      name = name.to_sym
-      
-      block = @test_dummy[name]
-
-      case (block)
-      when Module
-        block.method(name)
-      when Symbol
-        Helper.method(name)
-      when true
-        # Configure association dummy the first time it is called
-        if (respond_to?(:reflect_on_association) and reflection = reflect_on_association(name))
-          foreign_key = (reflection.respond_to?(:foreign_key) ? reflection.foreign_key : reflection.primary_key_name).to_sym
-
-          @test_dummy[name] =
-            lambda do |model, with_attributes|
-              (with_attributes and (with_attributes.key?(foreign_key) or with_attributes.key?(name))) ? nil : reflection.klass.send(:create_dummy)
-            end
-        elsif (respond_to?(:association_reflection) and reflection = association_reflection(name))
-          key = reflection[:key] || :"#{name.to_s.underscore}_id"
-
-          @test_dummy[name] =
-            lambda do |model, with_attributes|
-              (with_attributes and (with_attributes.key?(key) or with_attributes.key?(name))) ? nil : reflection[:associated_class].send(:create_dummy)
-            end
-        elsif (TestDummy::Helper.respond_to?(name))
-          @test_dummy[name] = lambda do |model, with_attributes|
-            TestDummy::Helper.send(name)
-          end
-        else
-          raise "Cannot dummy unknown relationship #{name}"
-        end
-      else
-        block
-      end
-    end
   end
   
   module InstanceMethods
     # Assigns any attributes which can be dummied that have not already
     # been populated.
     def dummy!(with_attributes = nil, tags = nil)
-      self.class.execute_dummy_operation(self, with_attributes, tags)
+      self.class.dummy_definition.apply!(self, with_attributes, tags)
     end
   end
 end
