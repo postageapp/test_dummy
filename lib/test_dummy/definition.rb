@@ -16,6 +16,12 @@ class TestDummy::Definition
   end
   alias_method :dup, :clone
 
+  def can_dummy_fields
+    @operations.each_with_object([ ]) do |operation, collection|
+      collection += operation.fields
+    end.compact.uniq
+  end
+
   def can_dummy?(*fields)
     return false unless (@test_dummy)
 
@@ -40,14 +46,14 @@ class TestDummy::Definition
     end
   end
 
-  def define_operation(model, fields, options)
+  def define_operation(model_class, fields, options)
     if (fields.any?)
       fields.each do |field|
         field_options = options.merge(
           :fields => [ field ]
         )
 
-        class_name, foreign_key = TestDummy::Support.reflection_properties(model, field)
+        class_name, foreign_key = TestDummy::Support.reflection_properties(model_class, field)
 
         if (class_name and foreign_key)
           field_options[:class_name] ||= class_name
@@ -65,11 +71,13 @@ class TestDummy::Definition
     end
   end
 
+  def <<(operation)
+    @operations << operation
+  end
+
   def apply!(model, with_options, tags)
     @operations.each do |operation|
       operation.apply!(model, with_options, tags)
     end
   end
-
-protected
 end

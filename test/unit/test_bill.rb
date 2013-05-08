@@ -1,6 +1,6 @@
 require File.expand_path('../helper', File.dirname(__FILE__))
 
-class TestBill < ActiveSupport::TestCase
+class TestBill < Test::Unit::TestCase
   def test_extension_loaded
     assert Bill.respond_to?(:create_dummy)
   end

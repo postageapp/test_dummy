@@ -33,7 +33,7 @@ module TestDummy::Support
     elsif (model_class.respond_to?(:association_reflection) and reflection = model_class.association_reflection(attribute))
       [
         reflection[:associated_class],
-        reflection[:key] || :"#{attribute.to_s.underscore}_id"
+        (reflection[:key] || "#{attribute.to_s.underscore}_id").to_sym
       ]
     end
   end

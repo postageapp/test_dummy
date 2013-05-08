@@ -1,13 +1,13 @@
 class TestDummy::Operation
   # == Properties ===========================================================
 
-  attr_reader :block
   attr_reader :fields
+  attr_reader :source_methods
+  attr_reader :source_keys
   attr_reader :only
   attr_reader :except
-  attr_reader :with
-  attr_reader :from
-  attr_reader :inherit
+  attr_reader :model_class
+  attr_reader :foreign_key
   
   # == Instance Methods =====================================================
 
@@ -15,7 +15,6 @@ class TestDummy::Operation
     @blocks = [ ]
 
     assign_block_options!(options)
-
     assign_fields_options!(options)
 
     assign_only_options!(options)
@@ -24,30 +23,55 @@ class TestDummy::Operation
     assign_with_options!(options)
 
     assign_from_options!(options)
-    assign_inherit_options!(options)
-
     assign_reflection_options!(options)
+
+    assign_inherit_options!(options)
   end
 
-  def apply!(model, with_options, tags)
+  def assignments(model, create_options, tags)
     if (@only)
-      return if (!tags or (tags & @only).empty?)
+      return [ ] if (!tags or (tags & @only).empty?)
     end
 
     if (@except)
-      return if (tags and (tags & @except).any?)
+      return [ ] if (tags and (tags & @except).any?)
     end
 
-    if (@fields)
-      @fields.each do |field|
-        value = nil #...
+    @fields.reject do |field|
+      field and (
+        (create_options and @source_keys.find { |k| create_options.key?(k) }) or
+        (model and @source_methods.find { |m| model.__send__(m) })
+      )
+    end
+  end
 
-        @blocks.each do |block|
-          value = block.call(model, field, tags, with_options)
+  def apply!(model, create_options, tags)
+    _assignments = assignments(model, create_options, tags)
 
-          break if (value)
+    return if (_assignments.empty?)
+
+    value = nil
+    
+    @blocks.find do |block|
+      value =
+        case (block.arity)
+        when 0
+          block.call
+        when 1
+          block.call(model)
+        when 2
+          block.call(model, _assignments)
+        when 3
+          block.call(model, _assignments, tags)
+        else
+          block.call(model, _assignments, tags, create_options)
         end
-      end
+
+      !value.nil?
+    end
+
+    model and !value.nil? and _assignments.each do |field|
+      model.__send__(:"#{field}=", value)
     end
   end
 
@@ -64,15 +88,33 @@ protected
     array
   end
 
+  def assign_block_options!(options)
+    return unless (options[:block])
+
+    @blocks << options[:block]
+  end
+
   def assign_fields_options!(options)
-    @fields = options[:fields]
+    @fields = options[:fields] || [ nil ]
+
+    @source_keys = [ ]
+    @source_methods = [ ]
+
+    @fields and @fields.each do |field|
+      next unless (field)
+
+      @source_keys << field
+      @source_keys << field.to_s
+
+      @source_methods << field
+    end
   end
 
   def assign_only_options!(options)
     @only = flatten_any(options, :only)
   end
 
-  def assign_except_options!
+  def assign_except_options!(options)
     @except = flatten_any(options, :except)
   end
 
@@ -118,58 +160,72 @@ protected
     end
   end
 
-  def assign_inherit_options!(options)
-    inherit = options[:inherit]
+  def block_for_inherit_options(spec)
+    case (spec)
+    when Proc
+      return spec
+    when Array
+      # Use as-is
+    when String
+      spec = spec.split('.').collect(&:to_sym)
+    when Symbol
+      spec = [ spec ]
+    end
 
-    return unless (inherit)
-
-    @inherit = Hash[
-      inherit.collect do |attribute, spec|
-        [
-          attribute.to_sym,
-          case (spec)
-          when Array
-            spec.collect(&:to_sym)
-          when String
-            spec.split('.').collect(&:to_sym)
-          when Proc
-            spec
-          end
-        ]
-      end
-    ]
-
-    @blocks << lambda do |target, model, with_attributes|
-      @inherit.each do |attribute, spec|
-        target[attribute] ||=
-          case (spec)
-          when Array
-            spec.inject(model) do |_model, _method|
-              _model ? _model.send(_method) : nil
-            end
-          when Proc
-            proc.call(model, with_attributes)
-          end
+    lambda do |model|
+      spec.inject(model) do |_model, _method|
+        _model ? _model.send(_method) : nil
       end
     end
   end
 
   def assign_reflection_options!(options)
-    return unless (options[:class_name] and options[:foreign_key])
+    return unless (options[:foreign_key])
 
-    @class_name = options[:class_name]
+    @model_class = options[:model_class]
     @foreign_key = options[:foreign_key]
 
-    @block ||= lambda do |model, with_attributes|
-      unless ((with_attributes and (with_attributes.key?(field) or with_attributes.key?(foreign_key))) or model.send(field).present?)
-        @from and @from.call(model)
-      end
-    end
+    @source_keys << @foreign_key
+    @source_keys << @foreign_key.to_s
+
+    @source_keys.uniq!
+
+    @source_methods << @foreign_key
+
+    @source_methods.uniq!
   end
 
+  def assign_inherit_options!(options)
+    inherit = options[:inherit]
 
-  def assign_block_options!(options)
-    @blocks << options[:block]
+    return unless (inherit)
+
+    case (inherit)
+    when Hash
+      # Use as-is
+    when Symbol, String
+      inherit = { inherit.to_sym => [ inherit.to_sym ] }
+    else
+      # Not supported, should raise.
+    end
+
+    @inheritance_procs =
+      inherit.collect do |attribute, spec|
+        [
+          attribute.to_sym,
+          block_for_inherit_options(spec)
+        ]
+      end
+
+    @blocks << lambda do |model|
+      @model_class.create_dummy(
+        Hash[
+          @inheritance_procs.collect do |attribute, proc|
+            [ attribute, proc.call(model) ]
+          end
+        ]
+      )
+    end
   end
 
   # def ____________

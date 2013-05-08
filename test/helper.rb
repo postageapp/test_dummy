@@ -16,6 +16,8 @@ require 'active_record'
 
 require 'test_dummy'
 
+require 'ostruct'
+
 TestDummy::Railtie.apply!
 
 class Test::Unit::TestCase
