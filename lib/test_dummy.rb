@@ -114,7 +114,11 @@ module TestDummy
       end
 
       if (block_given?)
-        options = options.merge(:block => Proc.new)
+        if (options)
+          options = options.merge(:block => Proc.new)
+        else
+          options = { :block => Proc.new }
+        end
       end
 
       fields = fields.flatten.collect(&:to_sym)
