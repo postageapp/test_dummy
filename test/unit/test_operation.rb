@@ -5,6 +5,7 @@ class TestOperation < Test::Unit::TestCase
     attr_accessor :field
     attr_accessor :field_id
     attr_accessor :root_id
+    attr_reader :changes
 
     def self.create_dummy(*args)
       self.new(*args)
@@ -14,13 +15,15 @@ class TestOperation < Test::Unit::TestCase
       @field = options && options[:field]
       @field_id = options && options[:field_id]
       @root_id = options && options[:root_id]
-    end
+
+      @changes = options && options.keys.collect(&:to_s)
+   end
   end
 
   def test_defaults
     operation = TestDummy::Operation.new({ })
 
-    assert_equal [ nil ], operation.fields
+    assert_equal nil, operation.fields
     assert_equal [ ], operation.source_keys
     assert_equal [ ], operation.source_methods
     assert_equal nil, operation.only
@@ -63,18 +66,18 @@ class TestOperation < Test::Unit::TestCase
 
     assert_equal [ ], operation.fields(nil)
     assert_equal [ ], operation.fields([ ])
-    assert_equal [ nil ], operation.fields([ :test_tag ])
+    assert_equal nil, operation.fields([ :test_tag ])
 
     assert_equal [ :test_tag ], operation.only
     assert_equal nil, operation.except
 
-    assert_equal [ ], operation.assignments(nil, { }, [ ])
+    assert_equal false, operation.assignments(nil, { }, [ ])
 
     operation.apply!(nil, { }, [ ])
 
     assert_equal 0, triggered
 
-    assert_equal [ nil ], operation.assignments(nil, { }, [ :test_tag ])
+    assert_equal nil, operation.assignments(nil, { }, [ :test_tag ])
 
     operation.apply!(nil, { }, [ :test_tag ])
 
@@ -91,22 +94,22 @@ class TestOperation < Test::Unit::TestCase
 
     assert_equal [ ], operation.fields(nil)
     assert_equal [ ], operation.fields([ ])
-    assert_equal [ nil ], operation.fields([ :first_tag ])
-    assert_equal [ nil ], operation.fields([ :second_tag ])
-    assert_equal [ nil ], operation.fields([ :first_tag, :second_tag ])
+    assert_equal nil, operation.fields([ :first_tag ])
+    assert_equal nil, operation.fields([ :second_tag ])
+    assert_equal nil, operation.fields([ :first_tag, :second_tag ])
 
     assert_equal [ :first_tag, :second_tag ], operation.only
     assert_equal nil, operation.except
 
-    assert_equal [ ], operation.assignments(nil, { }, [ ])
+    assert_equal false, operation.assignments(nil, { }, [ ])
 
     operation.apply!(nil, { }, [ ])
 
     assert_equal 0, triggered
 
-    assert_equal [ nil ], operation.assignments(nil, { }, [ :first_tag ])
-    assert_equal [ nil ], operation.assignments(nil, { }, [ :second_tag ])
-    assert_equal [ nil ], operation.assignments(nil, { }, [ :first_tag, :second_tag ])
+    assert_equal nil, operation.assignments(nil, { }, [ :first_tag ])
+    assert_equal nil, operation.assignments(nil, { }, [ :second_tag ])
+    assert_equal nil, operation.assignments(nil, { }, [ :first_tag, :second_tag ])
   end
 
   def test_block_with_only_tags_with_fields
@@ -121,7 +124,7 @@ class TestOperation < Test::Unit::TestCase
     assert_equal [ :test_tag ], operation.only
     assert_equal nil, operation.except
 
-    assert_equal [ ], operation.assignments(nil, { }, [ ])
+    assert_equal false, operation.assignments(nil, { }, [ ])
 
     operation.apply!(nil, { }, [ ])
 
@@ -145,13 +148,13 @@ class TestOperation < Test::Unit::TestCase
     assert_equal nil, operation.only
     assert_equal [ :test_tag ], operation.except
 
-    assert_equal [ nil ], operation.assignments(nil, { }, [ ])
+    assert_equal nil, operation.assignments(nil, { }, [ ])
 
     operation.apply!(nil, { }, [ ])
 
     assert_equal 1, triggered
 
-    assert_equal [ ], operation.assignments(nil, { }, [ :test_tag ])
+    assert_equal false, operation.assignments(nil, { }, [ :test_tag ])
 
     operation.apply!(nil, { }, [ :test_tag ])
 
@@ -176,7 +179,7 @@ class TestOperation < Test::Unit::TestCase
 
     assert_equal 1, triggered
 
-    assert_equal [ ], operation.assignments(nil, { }, [ :test_tag ])
+    assert_equal false, operation.assignments(nil, { }, [ :test_tag ])
 
     operation.apply!(nil, { }, [ :test_tag ])
 
@@ -195,13 +198,13 @@ class TestOperation < Test::Unit::TestCase
     assert_equal [ :only_tag ], operation.only
     assert_equal [ :except_tag ], operation.except
 
-    assert_equal [ ], operation.assignments(nil, { }, [ ])
-    assert_equal [ nil ], operation.assignments(nil, { }, [ :only_tag ])
-    assert_equal [ ], operation.assignments(nil, { }, [ :except_tag ])
-    assert_equal [ ], operation.assignments(nil, { }, [ :only_tag, :except_tag ])
-    assert_equal [ ], operation.assignments(nil, { }, [ :except_tag, :only_tag ])
-    assert_equal [ ], operation.assignments(nil, { }, [ :except_tag, :only_tag, :irrelevant_tag ])
-    assert_equal [ nil ], operation.assignments(nil, { }, [ :only_tag, :irrelevant_tag ])
+    assert_equal false, operation.assignments(nil, { }, [ ])
+    assert_equal nil, operation.assignments(nil, { }, [ :only_tag ])
+    assert_equal false, operation.assignments(nil, { }, [ :except_tag ])
+    assert_equal false, operation.assignments(nil, { }, [ :only_tag, :except_tag ])
+    assert_equal false, operation.assignments(nil, { }, [ :except_tag, :only_tag ])
+    assert_equal false, operation.assignments(nil, { }, [ :except_tag, :only_tag, :irrelevant_tag ])
+    assert_equal nil, operation.assignments(nil, { }, [ :only_tag, :irrelevant_tag ])
 
     operation.apply!(nil, { }, [ ])
 
@@ -233,18 +236,18 @@ class TestOperation < Test::Unit::TestCase
     assert_equal [ :only_tag ], operation.only
     assert_equal [ :except_tag ], operation.except
 
-    assert_equal [ ], operation.assignments(nil, { }, [ ])
+    assert_equal false, operation.assignments(nil, { }, [ ])
 
     operation.apply!(nil, { }, [ ])
 
     assert_equal 0, triggered
 
-    assert_equal [ ], operation.assignments(nil, { }, [ ])
+    assert_equal false, operation.assignments(nil, { }, [ ])
     assert_equal [ :test_field ], operation.assignments(nil, { }, [ :only_tag ])
-    assert_equal [ ], operation.assignments(nil, { }, [ :except_tag ])
-    assert_equal [ ], operation.assignments(nil, { }, [ :only_tag, :except_tag ])
-    assert_equal [ ], operation.assignments(nil, { }, [ :except_tag, :only_tag ])
-    assert_equal [ ], operation.assignments(nil, { }, [ :except_tag, :only_tag, :irrelevant_tag ])
+    assert_equal false, operation.assignments(nil, { }, [ :except_tag ])
+    assert_equal false, operation.assignments(nil, { }, [ :only_tag, :except_tag ])
+    assert_equal false, operation.assignments(nil, { }, [ :except_tag, :only_tag ])
+    assert_equal false, operation.assignments(nil, { }, [ :except_tag, :only_tag, :irrelevant_tag ])
     assert_equal [ :test_field ], operation.assignments(nil, { }, [ :only_tag, :irrelevant_tag ])
 
     operation.apply!(nil, { }, [ :except_tag ])
@@ -309,8 +312,8 @@ class TestOperation < Test::Unit::TestCase
   end
 
   def test_block_with_option_specified
-    triggered = false
-    block = lambda { triggered = :set }
+    triggered = 0
+    block = lambda { triggered += 1 }
     model = MockModelExample.new(:field => nil)
 
     operation = TestDummy::Operation.new(
@@ -320,7 +323,7 @@ class TestOperation < Test::Unit::TestCase
 
     operation.apply!(model, { :field => true }, [ ])
 
-    assert_equal false, triggered
+    assert_equal 0, triggered
 
     assert_equal nil, model.field
   end
@@ -360,9 +363,11 @@ class TestOperation < Test::Unit::TestCase
   end
 
   def test_block_with_model_reflection_attribute_set
-    triggered = false
-    block = lambda { triggered = 0 }
+    triggered = 0
+    block = lambda { triggered += 1 }
     model = MockModelExample.new(:field => :reference)
+
+    assert_equal %w[ field ], model.changes
 
     operation = TestDummy::Operation.new(
       :fields => [ :field ],
@@ -373,9 +378,11 @@ class TestOperation < Test::Unit::TestCase
     assert_equal [ :field, 'field', :field_id, 'field_id' ], operation.source_keys
     assert_equal [ :field, :field_id ], operation.source_methods
 
+    assert_equal false, operation.assignments(model, { :field => :reference }, [ ])
+
     operation.apply!(model, { }, [ ])
 
-    assert_equal false, triggered
+    assert_equal 0, triggered
 
     assert_equal :reference, model.field
   end
@@ -394,7 +401,9 @@ class TestOperation < Test::Unit::TestCase
     assert_equal [ :field, 'field', :field_id, 'field_id' ], operation.source_keys
     assert_equal [ :field, :field_id ], operation.source_methods
 
-    assert_equal [ ], operation.assignments(model, { }, [ ])
+    assert_equal %w[ field_id ], model.changes
+
+    assert_equal false, operation.assignments(model, { }, [ ])
 
     operation.apply!(model, { }, [ ])
 

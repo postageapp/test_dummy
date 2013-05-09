@@ -19,6 +19,8 @@ class TestDummy::Operation
     assign_only_options!(options)
     assign_except_options!(options)
 
+    assign_force_options!(options)
+
     assign_with_options!(options)
 
     assign_from_options!(options)
@@ -51,21 +53,54 @@ class TestDummy::Operation
 
   def assignments(model, create_options, tags)
     unless (trigger?(tags))
-      return [ ]
+      return false
     end
 
-    @fields.reject do |field|
-      field and (
-        (create_options and @source_keys.find { |k| create_options.key?(k) }) or
-        (model and @source_methods.find { |m| model.__send__(m) })
-      )
+    if (@force)
+      return @fields
     end
+
+    already_defined = { }
+    
+    if (model.respond_to?(:changes))
+      case (changes = model.changes)
+      when nil
+        { }
+      when Hash
+        # ActiveRecord >= 3.x returns a hash with the changes made, string keys.
+        changes.keys.each do |field, changed|
+          already_defined[field.to_sym] = true
+        end
+      else
+        # ActiveRecord < 3.x returns an array of changed fields as strings.
+        changes.each do |field|
+          already_defined[field.to_sym] = true
+        end
+      end
+    else
+      # Check the creation options, if any.
+      create_options and create_options.keys.each do |field, value|
+        already_defined[field.to_sym] = true
+      end
+
+      # Combine with any results that can be extracted from the model, if any.
+      model and @source_methods.each do |field|
+        already_defined[field] = !!model.__send__(field)
+      end
+    end
+
+    # If any of the source fields are listed as being defined, skip it.
+    if (@source_keys and @source_keys.find { |f| already_defined[f] })
+      return false
+    end
+
+    @fields
   end
 
   def apply!(model, create_options, tags)
     _assignments = assignments(model, create_options, tags)
 
-    return if (_assignments.empty?)
+    return if (_assignments === false)
 
     value = nil
     
@@ -87,6 +122,8 @@ class TestDummy::Operation
       !value.nil?
     end
 
+    return unless (_assignments)
+
     model and !value.nil? and _assignments.each do |field|
       next unless (field)
       
@@ -95,11 +132,7 @@ class TestDummy::Operation
   end
 
 protected
-  def flatten_any(options, key)
-    array = options[key]
-
-    return unless (array)
-
+  def flatten_any(array)
     array = [ array ].flatten.compact.collect(&:to_sym)
 
     return unless (array.any?)
@@ -114,7 +147,7 @@ protected
   end
 
   def assign_fields_options!(options)
-    @fields = options[:fields] || [ nil ]
+    @fields = options[:fields]
 
     @source_keys = [ ]
     @source_methods = [ ]
@@ -130,11 +163,21 @@ protected
   end
 
   def assign_only_options!(options)
-    @only = flatten_any(options, :only)
+    if (only_options = options[:only])
+      @only = flatten_any(only_options)
+    end
   end
 
   def assign_except_options!(options)
-    @except = flatten_any(options, :except)
+    if (except_options = options[:except])
+      @except = flatten_any(except_options)
+    end
+  end
+
+  def assign_force_options!(options)
+    if (options[:force])
+      @force = options[:force]
+    end
   end
 
   def assign_with_options!(options)

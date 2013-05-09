@@ -36,7 +36,9 @@ class TestDummy::Definition
     tags = tags.flatten.compact
 
     @operations.each_with_object([ ]) do |operation, collection|
-      collection.concat(operation.fields(tags))
+      if (_fields = operation.fields(tags))
+        collection.concat(_fields)
+      end
     end.compact.uniq
   end
 
@@ -61,6 +63,14 @@ class TestDummy::Definition
 
     !matching_fields.find do |field, found|
       !found
+    end
+  end
+
+  def [](field)
+    field = field.to_sym
+
+    @operations.select do |operation|
+      operation.fields.include?(field)
     end
   end
 
