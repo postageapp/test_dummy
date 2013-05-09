@@ -14,5 +14,9 @@ class TestTestHelper < Test::Unit::TestCase
 
     assert account
     assert account.closed_at?
+
+    bill = a Bill, :account => account
+
+    assert_equal account, bill.account
   end
 end
