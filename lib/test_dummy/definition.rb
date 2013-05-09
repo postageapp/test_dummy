@@ -71,10 +71,10 @@ class TestDummy::Definition
           :fields => [ field ].flatten.collect(&:to_sym)
         )
 
-        class_name, foreign_key = TestDummy::Support.reflection_properties(model_class, field)
+        model_class, foreign_key = TestDummy::Support.reflection_properties(model_class, field)
 
-        if (class_name and foreign_key)
-          field_options[:class_name] ||= class_name
+        if (model_class and foreign_key)
+          field_options[:model_class] ||= model_class
           field_options[:foreign_key] ||= foreign_key
         end
 

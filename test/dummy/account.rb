@@ -13,7 +13,7 @@ class Account
     TestDummy::Helper.random_string(8)
   end
 
-  dummy do |m|
+  dummy :except => :closed do |m|
     m.field_c = TestDummy::Helper.random_string(8)
   end
 
@@ -22,6 +22,6 @@ class Account
   end
 
   dummy :closed_at, :only => [ :closed ] do |m|
-    m.activated_at + rand(86400)
+    (m.activated_at || Time.now) + rand(86400)
   end
 end

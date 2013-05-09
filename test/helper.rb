@@ -42,6 +42,9 @@ ActiveSupport::Dependencies.autoload_paths << File.expand_path('models', base_pa
 # Trigger loading the Rails root path here
 Rails.root
 
+# Example definitions that are added as extensions to the TestDummy::Helper
+# module for use by default.
+
 TestDummy.define do
   dummy :description,
     :with => :phonetic_string

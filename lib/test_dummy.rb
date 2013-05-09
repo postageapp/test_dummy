@@ -72,7 +72,7 @@ module TestDummy
     when Hash
       options = fields.pop
     end
-    
+
     # REFACTOR: Adapt to new Operation style
     if (options and options[:with])
       with = options[:with]
@@ -114,19 +114,16 @@ module TestDummy
     # the model being created, the second the parameters supplied to create
     # it. The first and second parameters may be nil.
     def dummy(*fields)
-      options = nil
-
-      case (fields.last)
-      when Hash
-        options = fields.pop
-      end
+      options =
+        case (fields.last)
+        when Hash
+           fields.pop
+         else
+          { }
+        end
 
       if (block_given?)
-        if (options)
-          options = options.merge(:block => Proc.new)
-        else
-          options = { :block => Proc.new }
-        end
+        options = options.merge(:block => Proc.new)
       end
 
       self.dummy_definition.define_operation(self, fields, options)
@@ -142,16 +139,16 @@ module TestDummy
     # new model is provided to the optional block for manipulation before
     # the dummy operation is completed. Returns a dummy model which has not
     # been saved.
-    def build_dummy(with_attributes = nil, tags = nil)
+    def build_dummy(create_attributes = nil, tags = nil)
       build_scope = (method(:scoped).arity == 1) ? scoped(nil).scope(:create) : scoped.scope_for_create
 
-      with_attributes = TestDummy::Support.combine_attributes(build_scope, with_attributes)
+      create_attributes = TestDummy::Support.combine_attributes(build_scope, create_attributes)
 
-      model = new(with_attributes)
+      model = new(create_attributes)
 
       yield(model) if (block_given?)
 
-      self.dummy_definition.apply!(model, with_attributes, tags)
+      self.dummy_definition.apply!(model, create_attributes, tags)
       
       model
     end
@@ -163,10 +160,10 @@ module TestDummy
     # validation failure, or if it was blocked by a callback.
     def create_dummy(*args, &block)
       if (args.last.is_a?(Hash))
-        with_attributes = args.pop
+        create_attributes = args.pop
       end
 
-      model = build_dummy(with_attributes, args, &block)
+      model = build_dummy(create_attributes, args, &block)
       
       model.save
       
@@ -181,10 +178,10 @@ module TestDummy
     # blocked by a callback.
     def create_dummy!(*args, &block)
       if (args.last.is_a?(Hash))
-        with_attributes = args.pop
+        create_attributes = args.pop
       end
 
-      model = build_dummy(with_attributes, args, &block)
+      model = build_dummy(create_attributes, args, &block)
       
       model.save!
       
@@ -195,8 +192,8 @@ module TestDummy
   module InstanceMethods
     # Assigns any attributes which can be dummied that have not already
     # been populated.
-    def dummy!(with_attributes = nil, tags = nil)
-      self.class.dummy_definition.apply!(self, with_attributes, tags)
+    def dummy!(create_attributes = nil, tags = nil)
+      self.class.dummy_definition.apply!(self, create_attributes, tags)
     end
   end
 end

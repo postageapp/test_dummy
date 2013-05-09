@@ -28,7 +28,7 @@ class TestDummy::Loader
         Kernel.load(dummy_path)
 
         @loaded[class_name] = true
-      rescue => e
+      rescue LoadError => e
         @loaded[class_name] = e
       end
     else

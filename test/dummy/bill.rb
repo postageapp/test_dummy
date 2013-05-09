@@ -1,5 +1,4 @@
 class Bill
-   raise 'loadered'
   dummy :account
 
   dummy :order_date do

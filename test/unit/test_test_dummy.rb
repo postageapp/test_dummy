@@ -20,4 +20,9 @@ class TestTestDummy < Test::Unit::TestCase
     assert_equal true, respond_to?(:an)
     assert_equal true, respond_to?(:one_of)
   end
+
+  def test_helper_methods
+    assert_equal true, TestDummy::Helper.respond_to?(:description)
+    assert_equal true, TestDummy::Helper.respond_to?(:phonetic_string)
+  end
 end

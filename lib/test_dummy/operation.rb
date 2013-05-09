@@ -23,8 +23,10 @@ class TestDummy::Operation
 
     assign_from_options!(options)
     assign_reflection_options!(options)
-
     assign_inherit_options!(options)
+    assign_reflection_block!(options)
+
+    assign_default_block!(options)
   end
 
   def fields(tags = nil)
@@ -153,26 +155,28 @@ protected
   end
 
   def assign_from_options!(options)
-    if (from = options[:from])
-      case (from)
-      when Proc
-        @from = from
+    from = options[:from]
 
-        return
-      when Array
-        # Array is an acceptable format, left as-is
-      when Hash
-        from = from.to_a
-      when String
-        from = from.split('.')
-      else
-        raise TestDummy::Exception, "Argument to :from must be a String, Array or Hash."
-      end
+    return unless (from)
 
-      @from = lambda do |model|
-        from.inject(model) do |_model, _method|
-          _model ? _model.send(_method) : nil
-        end
+    case (from)
+    when Proc
+      @from = from
+
+      return
+    when Array
+      from.collect(&:to_sym)
+    when Hash
+      from = from.to_a
+    when String
+      from = from.split('.')
+    else
+      raise TestDummy::Exception, "Argument to :from must be a String, Array or Hash."
+    end
+
+    @blocks << lambda do |model|
+      from.inject(model) do |_model, _method|
+        _model ? _model.send(_method) : nil
       end
     end
   end
@@ -182,7 +186,7 @@ protected
     when Proc
       return spec
     when Array
-      # Use as-is
+      spec.collect(&:to_sym)
     when String
       spec = spec.split('.').collect(&:to_sym)
     when Symbol
@@ -233,31 +237,38 @@ protected
           block_for_inherit_options(spec)
         ]
       end
-
-    @blocks << lambda do |model|
-      @model_class.create_dummy(
-        Hash[
-          @inheritance_procs.collect do |attribute, proc|
-            [ attribute, proc.call(model) ]
-          end
-        ]
-      )
-    end
   end
 
-  # def ____________
-  #   field_operation[:block] ||= lambda do |model, with_attributes|
-  #     unless ((with_attributes and (with_attributes.key?(field) or with_attributes.key?(foreign_key))) or model.send(field).present?)
-  #       object = from && from.inject(model) do |_model, _method|
-  #         _model ? _model.send(_method) : nil
-  #       end
-  #     end
-# 
-  #     reflection_class.create_dummy do |target|
-  #       if (create_options_proc)
-  #         create_options_proc.call(target, model, with_attributes)
-  #       end
-  #     end
-  #   end
-  # end
+  def assign_reflection_block!(options)
+    return unless (@model_class)
+
+    @blocks <<
+      if (@inheritance_procs)
+        lambda do |model|
+          @model_class.create_dummy(
+            Hash[
+              @inheritance_procs.collect do |attribute, proc|
+                [ attribute, proc.call(model) ]
+              end
+            ]
+          )
+        end
+      else
+        lambda do |model|
+          @model_class.create_dummy
+        end
+      end
+  end
+
+  def assign_default_block!(options)
+    return if (@blocks.any? or !@fields or @fields.empty?)
+
+    @fields.each do |field|
+      next unless (field and TestDummy::Helper.respond_to?(field))
+
+      @blocks << lambda do |model|
+        TestDummy::Helper.send(field)
+      end
+    end
+  end
 end

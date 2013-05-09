@@ -9,8 +9,15 @@ class TestOperation < Test::Unit::TestCase
   end
 
   def test_broken_load
+    exception = nil
     loader = TestDummy::Loader.new
 
-    assert_equal 'NameError', loader[Broken].class.to_s
+    begin
+      loader[Broken]
+    rescue NameError => e
+      exception = e
+    end
+
+    assert_equal 'NameError', exception.class.to_s
   end
 end

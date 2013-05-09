@@ -44,6 +44,10 @@ class TestBill < Test::Unit::TestCase
     bill = Bill.create_dummy(:overdue, :account => account)
 
     assert bill
+
+    assert bill.account
+    assert_equal account.id, bill.account.id
+
     assert_equal true, bill.valid?
     assert_equal false, bill.new_record?
 

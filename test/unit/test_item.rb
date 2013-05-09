@@ -5,6 +5,8 @@ class TestItem < Test::Unit::TestCase
     assert Item.respond_to?(:create_dummy)
 
     assert TestDummy::Loader.load!(Item)
+
+    assert_equal [ :account, :bill, :description ], Item.dummy_definition.fields
   end
 
   def test_reflection_properties
@@ -39,6 +41,9 @@ class TestItem < Test::Unit::TestCase
 
   def test_create_dummy_via_association
     bill = a Bill
+
+    assert bill.account
+    assert bill.account.id
 
     assert_equal false, bill.new_record?
 
