@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = "test_dummy"
-  s.version = "0.4.0"
+  s.version = "0.5.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["tadman"]
-  s.date = "2013-05-06"
+  s.date = "2013-05-09"
   s.description = "Test Dummy allows you to define how to fake models automatically so that you can use dummy data for testing instead of fixtures. Dummy models are always generated using the current schema and don't need to me migrated like fixtures."
   s.email = "github@tadman.ca"
   s.extra_rdoc_files = [
@@ -24,7 +24,10 @@ Gem::Specification.new do |s|
     "Rakefile",
     "VERSION",
     "lib/test_dummy.rb",
+    "lib/test_dummy/definition.rb",
     "lib/test_dummy/helper.rb",
+    "lib/test_dummy/loader.rb",
+    "lib/test_dummy/operation.rb",
     "lib/test_dummy/railtie.rb",
     "lib/test_dummy/support.rb",
     "lib/test_dummy/test_helper.rb",
@@ -33,18 +36,30 @@ Gem::Specification.new do |s|
     "test/db/migrate/0002_create_accounts.rb",
     "test/db/migrate/0003_create_bills.rb",
     "test/db/migrate/0004_create_items.rb",
+    "test/db/migrate/0005_create_users.rb",
     "test/dummy/account.rb",
     "test/dummy/bill.rb",
+    "test/dummy/broken.rb",
     "test/dummy/item.rb",
+    "test/dummy/user.rb",
+    "test/dummy/user/admin.rb",
     "test/helper.rb",
     "test/models/account.rb",
     "test/models/bill.rb",
+    "test/models/broken.rb",
     "test/models/example.rb",
     "test/models/item.rb",
+    "test/models/user.rb",
+    "test/models/user/admin.rb",
     "test/unit/test_account.rb",
     "test/unit/test_bill.rb",
+    "test/unit/test_definition.rb",
     "test/unit/test_item.rb",
+    "test/unit/test_loader.rb",
+    "test/unit/test_operation.rb",
+    "test/unit/test_support.rb",
     "test/unit/test_test_dummy.rb",
+    "test/unit/test_user.rb",
     "test_dummy.gemspec"
   ]
   s.homepage = "http://github.com/tadman/test_dummy"

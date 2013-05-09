@@ -1,12 +1,20 @@
 module TestDummy::TestHelper
-  def dummy(scope, options = { })
-    instance = scope.respond_to?(:build) ? scope.build(options) : scope.new(options)
+  def dummy(scope, *tags)
+    create_attributes =
+      case (tags.last)
+      when Hash
+        tags.pop
+      else
+        { }
+      end
+
+    instance = scope.respond_to?(:build) ? scope.build(create_attributes) : scope.new(create_attributes)
 
     if (block_given?)
       yield(instance)
     end
-    
-    instance.dummy!
+
+    instance.dummy!(create_attributes, tags)
     
     instance.save!
     instance
