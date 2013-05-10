@@ -24,6 +24,13 @@ class TestBill < Test::Unit::TestCase
     assert_equal [ ], bill.items.collect(&:ids)
   end
 
+  def test_create_with_account
+    account = an Account
+    bill = a Bill, :account => account
+
+    assert_equal account.id, bill.account.id
+  end
+
   def test_create_dummy_via_association
     account = an Account
 

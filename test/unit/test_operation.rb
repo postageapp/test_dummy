@@ -5,7 +5,7 @@ class TestOperation < Test::Unit::TestCase
     attr_accessor :field
     attr_accessor :field_id
     attr_accessor :root_id
-    attr_reader :changes
+    attr_reader :changed
 
     def self.create_dummy(*args)
       created_dummy = self.new(*args)
@@ -18,9 +18,10 @@ class TestOperation < Test::Unit::TestCase
     def initialize(options = nil)
       @field = options && options[:field]
       @field_id = options && options[:field_id]
-      @root_id = options && options[:root_id]
 
-      @changes = options && options.keys.collect(&:to_s)
+      # root_id is not "accessible"
+      
+      @changed = options && options.keys.collect(&:to_s)
    end
   end
 
@@ -371,7 +372,7 @@ class TestOperation < Test::Unit::TestCase
     block = lambda { triggered += 1 }
     model = MockModelExample.new(:field => :reference)
 
-    assert_equal %w[ field ], model.changes
+    assert_equal %w[ field ], model.changed
 
     operation = TestDummy::Operation.new(
       :fields => [ :field ],
@@ -405,7 +406,7 @@ class TestOperation < Test::Unit::TestCase
     assert_equal [ :field, 'field', :field_id, 'field_id' ], operation.source_keys
     assert_equal [ :field, :field_id ], operation.source_methods
 
-    assert_equal %w[ field_id ], model.changes
+    assert_equal %w[ field_id ], model.changed
 
     assert_equal false, operation.assignments(model, { }, [ ])
 
@@ -417,7 +418,8 @@ class TestOperation < Test::Unit::TestCase
   end
 
   def test_block_with_model_inheritance_as_symbol
-    model = MockModelExample.new(:root_id => 1)
+    model = MockModelExample.new
+    model.root_id = 1
 
     operation = TestDummy::Operation.new(
       :fields => [ :field ],
@@ -439,7 +441,8 @@ class TestOperation < Test::Unit::TestCase
   end
 
   def test_block_with_model_inheritance_as_hash
-    model = MockModelExample.new(:root_id => 1)
+    model = MockModelExample.new
+    model.root_id = 1
 
     operation = TestDummy::Operation.new(
       :fields => [ :field ],
@@ -458,5 +461,19 @@ class TestOperation < Test::Unit::TestCase
     assert model.field
 
     assert_equal 1, model.field.root_id
+  end
+
+  def test_with_reflection_already_assigned
+    model = MockModelExample.new(:field_id => 1)
+
+    assert_equal %w[ field_id ], model.changed
+
+    operation = TestDummy::Operation.new(
+      :fields => [ :field ],
+      :model_class => MockModelExample,
+      :foreign_key => :field_id
+    )
+
+    assert_equal false, operation.assignments(model, { }, [ ])
   end
 end

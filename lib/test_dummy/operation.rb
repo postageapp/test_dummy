@@ -62,18 +62,12 @@ class TestDummy::Operation
 
     already_defined = { }
     
-    if (model.respond_to?(:changes))
-      case (changes = model.changes)
+    if (model.respond_to?(:changed))
+      case (changed = model.changed)
       when nil
         { }
-      when Hash
-        # ActiveRecord >= 3.x returns a hash with the changes made, string keys.
-        changes.keys.each do |field, changed|
-          already_defined[field.to_sym] = true
-        end
       else
-        # ActiveRecord < 3.x returns an array of changed fields as strings.
-        changes.each do |field|
+        changed.each do |field|
           already_defined[field.to_sym] = true
         end
       end
