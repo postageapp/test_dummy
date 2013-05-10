@@ -273,7 +273,7 @@ protected
       # Not supported, should raise.
     end
 
-    @inheritance_procs =
+    @inherited_attributes =
       inherit.collect do |attribute, spec|
         [
           attribute.to_sym,
@@ -286,15 +286,13 @@ protected
     return unless (@model_class)
 
     @blocks <<
-      if (@inheritance_procs)
+      if (@inherited_attributes)
         lambda do |model|
-          @model_class.create_dummy(
-            Hash[
-              @inheritance_procs.collect do |attribute, proc|
-                [ attribute, proc.call(model) ]
-              end
-            ]
-          )
+          @model_class.create_dummy do |reflection_model|
+            @inherited_attributes.each do |attribute, proc|
+              reflection_model.send("#{attribute}=", proc.call(model))
+            end
+          end
         end
       else
         lambda do |model|

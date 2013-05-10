@@ -8,7 +8,11 @@ class TestOperation < Test::Unit::TestCase
     attr_reader :changes
 
     def self.create_dummy(*args)
-      self.new(*args)
+      created_dummy = self.new(*args)
+
+      yield(created_dummy) if (block_given?)
+
+      created_dummy
     end
 
     def initialize(options = nil)
