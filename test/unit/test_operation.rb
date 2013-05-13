@@ -62,6 +62,14 @@ class TestOperation < Test::Unit::TestCase
     assert_equal [ :field, :field_id ], operation.fields
   end
 
+  def test_with_after
+    operation = TestDummy::Operation.new(
+      :after => :save
+    )
+
+    assert_equal :save, operation.after
+  end
+
   def test_block_with_only_tag
     triggered = 0
 

@@ -149,7 +149,7 @@ module TestDummy
       yield(model) if (block_given?)
 
       self.dummy_definition.apply!(model, create_attributes, tags)
-      
+
       model
     end
     
@@ -158,14 +158,16 @@ module TestDummy
     # the dummy operation is completed and the model is saved. Returns a
     # dummy model. The model may not have been saved if there was a
     # validation failure, or if it was blocked by a callback.
-    def create_dummy(*args, &block)
-      if (args.last.is_a?(Hash))
-        create_attributes = args.pop
+    def create_dummy(*tags, &block)
+      if (tags.last.is_a?(Hash))
+        create_attributes = tags.pop
       end
 
-      model = build_dummy(create_attributes, args, &block)
-      
+      model = build_dummy(create_attributes, tags, &block)
+
       model.save
+
+      self.dummy_definition.apply_after_save!(nil, create_attributes, tags)
       
       model
     end
@@ -176,12 +178,12 @@ module TestDummy
     # dummy model. Will throw ActiveRecord::RecordInvalid if there was al20
     # validation failure, or ActiveRecord::RecordNotSaved if the save was
     # blocked by a callback.
-    def create_dummy!(*args, &block)
-      if (args.last.is_a?(Hash))
-        create_attributes = args.pop
+    def create_dummy!(*tags, &block)
+      if (tags.last.is_a?(Hash))
+        create_attributes = tags.pop
       end
 
-      model = build_dummy(create_attributes, args, &block)
+      model = build_dummy(create_attributes, tags, &block)
       
       model.save!
       

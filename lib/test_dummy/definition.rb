@@ -18,6 +18,18 @@ class TestDummy::Definition
   # on the tags specified.
   def apply!(model, create_options, tags)
     @operations.each do |operation|
+      next if (operation.after)
+
+      operation.apply!(model, create_options, tags)
+    end
+
+    true
+  end
+
+  def apply_after_save!(model, create_options, tags)
+    @operations.each do |operation|
+      next unless (operation.after == :save)
+
       operation.apply!(model, create_options, tags)
     end
 

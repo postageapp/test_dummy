@@ -35,4 +35,25 @@ class TestDefinition < Test::Unit::TestCase
 
     assert_equal [ :account ], definition.fields([ :only_tag ])
   end
+
+  def test_apply_with_after_option
+    definition = TestDummy::Definition.new
+
+    triggered = 0
+
+    options = {
+      :after => :save,
+      :block => lambda { triggered += 1 }
+    }.freeze
+
+    definition.define_operation(Bill, [ :account ], options)
+
+    definition.apply!(nil, { }, [ ])
+
+    assert_equal 0, triggered
+
+    definition.apply_after_save!(nil, { }, [ ])
+
+    assert_equal 1, triggered
+  end
 end
