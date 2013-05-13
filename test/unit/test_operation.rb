@@ -31,6 +31,7 @@ class TestOperation < Test::Unit::TestCase
     assert_equal nil, operation.fields
     assert_equal [ ], operation.source_keys
     assert_equal [ ], operation.source_methods
+    assert_equal nil, operation.after
     assert_equal nil, operation.only
     assert_equal nil, operation.except
     assert_equal nil, operation.model_class

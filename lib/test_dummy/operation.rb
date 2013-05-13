@@ -5,6 +5,7 @@ class TestDummy::Operation
   attr_reader :source_keys
   attr_reader :only
   attr_reader :except
+  attr_reader :after
   attr_reader :model_class
   attr_reader :foreign_key
   
@@ -18,6 +19,7 @@ class TestDummy::Operation
 
     assign_only_options!(options)
     assign_except_options!(options)
+    assign_after_options!(options)
 
     assign_force_options!(options)
 
@@ -165,6 +167,12 @@ protected
   def assign_except_options!(options)
     if (except_options = options[:except])
       @except = flatten_any(except_options)
+    end
+  end
+
+  def assign_after_options!(options)
+    if (after_option = options[:after])
+      @after = after_option
     end
   end
 
