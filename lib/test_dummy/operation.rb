@@ -84,44 +84,56 @@ class TestDummy::Operation
       return @fields
     end
 
-    already_defined = { }
-    
-    if (model.respond_to?(:changed))
-      case (changed = model.changed)
-      when nil
-        { }
-      else
-        changed.each do |field|
-          already_defined[field.to_sym] = true
-        end
-      end
-    else
-      # Check the creation options, if any.
-      create_options and create_options.keys.each do |field, value|
-        already_defined[field.to_sym] = true
-      end
-
-      # Combine with any results that can be extracted from the model, if any.
-      model and @source_methods.each do |field|
-        already_defined[field] = !!model.__send__(field)
+    # ActiveRecord::Base derived models will return an array of strings listing
+    # the fields that have been altered before the model is saved. This
+    # includes any fields that have been populated through the constructor
+    # call, carried through via scope, or have been altered through accessors.
+    if (model and model.respond_to?(:changed))
+      # If any of the source methods are listed as "changed", then this is
+      # interpreted as a hit, that the fields are already defined or will be.
+      if ((@source_methods & model.changed.collect(&:to_sym)).any?)
+        return false
       end
     end
 
-    # If any of the source fields are listed as being defined, skip it.
-    if (@source_keys and @source_keys.find { |f| already_defined[f] })
-      return false
+    # If this operation does not populate any fields, then there's no further
+    # testing required. The processing can continue without assignments.
+    unless (@fields)
+      return
     end
 
-    @fields
+    fields_not_assigned = @fields
+
+    if (fields_not_assigned.any? and create_options)
+      # If any of the source keys are listed in the options, then this is
+      # interpreted as a hit, that the fields are already defined or will be.
+      if ((@source_keys & create_options.keys.collect(&:to_sym)).any?)
+        return false
+      end
+    end
+
+    # If there are potentially unassigned fields, the only way to proceed is
+    # to narrow it down to the ones that are still `nil`.
+    if (model and fields_not_assigned and fields_not_assigned.any?)
+      fields_not_assigned = fields_not_assigned.select do |field|
+        model.__send__(field).nil?
+      end
+    end
+
+    fields_not_assigned
   end
 
+  # Called to apply this operation. The model, create_options and tags
+  # arguments can be specified to provide more context.
   def apply!(model, create_options, tags)
     _assignments = assignments(model, create_options, tags)
 
     return if (_assignments === false)
 
     value = nil
-    
+
+    # The defined blocks are tried in sequence until one of them returns
+    # a non-nil value.    
     @blocks.find do |block|
       value =
         case (block.arity)

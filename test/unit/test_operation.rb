@@ -21,7 +21,7 @@ class TestOperation < Test::Unit::TestCase
 
       # root_id is not "accessible"
       
-      @changed = options && options.keys.collect(&:to_s)
+      @changed = options && options.keys.collect(&:to_s) || [ ]
    end
   end
 
