@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="Test dummy : Simple faker data and model factory for Rails" />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Test dummy</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/twg/test_dummy">View on GitHub</a>
+
+          <h1 id="project_title">Test dummy</h1>
+          <h2 id="project_tagline">Simple faker data and model factory for Rails</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/twg/test_dummy/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/twg/test_dummy/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h1>test_dummy</h1>
+
+<p>Test Dummy is an easy fake data generator library with the ability to create
+individual fake models or complex, inter-linked sets of models on-demand.</p>
+
+<p>ActiveRecord models, the default for Ruby on Rails, is the only type supported
+at this time.</p>
+
+<p>The generators produced by Test Dummy can simplify automated testing by making
+it possible to have test records created in a known-good state every time
+instead of depending on fixture files which may contain irregularities.</p>
+
+<p>After installing the gem, methods to declare how to fake data are made
+available within ActiveRecord-derived models. There are several ways to
+declare how to dummy something.</p>
+
+<h2>Getting Started</h2>
+
+<h3>Add Gem Dependency</h3>
+
+<p>To add Test Dummy functionality to an application, add the dependency to the
+<code>Gemfile</code>:</p>
+
+<div class="highlight"><pre><span class="n">gem</span> <span class="s1">'test_dummy'</span>
+</pre></div>
+
+<p>Most application frameworks provide some kind of test helper foundation,
+like <code>test/test_helper.rb</code> in Rails or <code>test/helper.rb</code> in many gem templates.</p>
+
+<p>Include the following line in there at an appropriate location:</p>
+
+<div class="highlight"><pre><span class="nb">require</span> <span class="s1">'test_dummy'</span>
+</pre></div>
+
+<p>This is usually inserted after all the foundational dependencies are taken
+care of, so typically later in the file.</p>
+
+<h3>Dummy Attributes</h3>
+
+<p>If a model has no validation requirements, it will already have some basic
+dummy functionality. Models can be created simply:</p>
+
+<div class="highlight"><pre><span class="n">dummy_example</span> <span class="o">=</span> <span class="no">ExampleModel</span><span class="o">.</span><span class="n">create_dummy</span>
+</pre></div>
+
+<p>Like the default <code>create</code> method, <code>create_dummy</code> also takes arguments that
+can be used to supply pre-defined attributes:</p>
+
+<div class="highlight"><pre><span class="n">named_example</span> <span class="o">=</span> <span class="no">ExampleModel</span><span class="o">.</span><span class="n">create_dummy</span><span class="p">(</span><span class="ss">:name</span> <span class="o">=&gt;</span> <span class="s1">'Example'</span><span class="p">)</span>
+</pre></div>
+
+<p>Any attribute which has validation requirements will need to have a generator
+or the models emitted by <code>create_dummy</code> cannot be saved. In this example,
+if <code>name</code> was a required field, this would have to be populated by TestDummy.</p>
+
+<p>For convenience, you can add this directly to the model in question:</p>
+
+<div class="highlight"><pre><span class="k">class</span> <span class="nc">ExampleModel</span> <span class="o">&lt;</span> <span class="ss">ActiveRecord</span><span class="p">:</span><span class="ss">:Base</span>
+  <span class="n">dummy</span> <span class="ss">:name</span> <span class="k">do</span>
+    <span class="s1">'Test Name'</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</pre></div>
+
+<p>The <code>dummy</code> definition defines an operation that will occur if the attribute
+name is not specified. In this case, if <code>name</code> is not supplied as an argument
+to <code>create_dummy</code> then it will be filled in. These operations are attempted in
+the order they are defined.</p>
+
+<p>Keep in mind it is possible to create invalid model instances if the parameters
+sent in would result in a validation error. For instance:</p>
+
+<div class="highlight"><pre><span class="n">broken_example</span> <span class="o">=</span> <span class="no">ExampleModel</span><span class="o">.</span><span class="n">create_dummy</span><span class="p">(</span><span class="ss">:name</span> <span class="o">=&gt;</span> <span class="kp">nil</span><span class="p">)</span>
+
+<span class="n">broken_example</span><span class="o">.</span><span class="n">valid?</span>
+<span class="c1"># =&gt; false</span>
+</pre></div>
+
+<p>The <code>dummy</code> function can be used in several ways to handle a variety of
+situations. The default usage is simple:</p>
+
+<div class="highlight"><pre><span class="n">dummy</span> <span class="ss">:name</span> <span class="k">do</span>
+  <span class="s1">'Fake Name'</span>
+<span class="k">end</span>
+</pre></div>
+
+<p>In this case, whatever is returned by the block is inserted into the listed
+attribute if that attribute was not speficied in the options.</p>
+
+<p>It is possible to dummy several attributes at the same time:</p>
+
+<div class="highlight"><pre><span class="n">dummy</span> <span class="ss">:password</span><span class="p">,</span> <span class="ss">:password_confirmation</span> <span class="k">do</span>
+  <span class="s1">'testpassword'</span>
+<span class="k">end</span>
+</pre></div>
+
+<p>This will be applied to any of the listed attributes that have not been
+specified in the options.</p>
+
+<p>If access to the model that's being constructed is required, it is passed in
+as the first argument to the block:</p>
+
+<div class="highlight"><pre><span class="n">dummy</span> <span class="ss">:description</span> <span class="k">do</span> <span class="o">|</span><span class="n">example</span><span class="o">|</span>
+  <span class="s2">"Example with a name of length %d"</span> <span class="o">%</span> <span class="n">example</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">length</span>
+<span class="k">end</span>
+</pre></div>
+
+<p>The model itself can be manipulated in any way that's required, such as setting
+other fields, calling methods, and so forth, but it's important to be careful
+here as the model at this point is incomplete if there are other attributes
+which have yet to have had their <code>dummy</code> generator called.</p>
+
+<h3>Separate Definition File</h3>
+
+<p>If including the attribute dummy generators in the main model file produces
+too much clutter, they can be relocated to an alternate location. This has the
+advantage in that they will only be loaded if a dummy operation is performed,
+so a production application will not be affected by their presence.</p>
+
+<p>An example model <code>app/models/example_model.rb</code> file looks like:</p>
+
+<div class="highlight"><pre><span class="k">class</span> <span class="nc">ExampleModel</span> <span class="o">&lt;</span> <span class="ss">ActiveRecord</span><span class="p">:</span><span class="ss">:Base</span>
+  <span class="n">dummy</span> <span class="ss">:name</span> <span class="k">do</span>
+    <span class="s2">"Random Name </span><span class="se">\#</span><span class="s2">%d"</span> <span class="o">%</span> <span class="nb">rand</span><span class="p">(</span><span class="mi">10</span><span class="n">e6</span><span class="p">)</span>
+  <span class="k">end</span>
+
+  <span class="n">dummy</span> <span class="ss">:password</span><span class="p">,</span> <span class="ss">:password_confirmation</span> <span class="k">do</span>
+    <span class="s1">'tester'</span>
+  <span class="k">end</span>
+
+  <span class="n">dummy</span> <span class="ss">:nickname</span><span class="p">,</span> <span class="ss">:use</span> <span class="o">=&gt;</span> <span class="ss">:random_phonetic_string</span>
+<span class="k">end</span>
+</pre></div>
+
+<p>To avoid cluttering up your models with lots of dummy-related code, this can
+be stored in the <code>test/dummy</code> directory as a secondary file that's loaded as
+required.</p>
+
+<p>An example <code>test/dummy/example_model.rb</code> looks like this:</p>
+
+<div class="highlight"><pre><span class="k">class</span> <span class="nc">ExampleModel</span>
+  <span class="n">dummy</span> <span class="ss">:name</span> <span class="k">do</span>
+    <span class="s2">"Random Name </span><span class="se">\#</span><span class="s2">%d"</span> <span class="o">%</span> <span class="nb">rand</span><span class="p">(</span><span class="mi">10</span><span class="n">e6</span><span class="p">)</span>
+  <span class="k">end</span>
+
+  <span class="n">dummy</span> <span class="ss">:password</span><span class="p">,</span> <span class="ss">:password_confirmation</span> <span class="k">do</span>
+    <span class="s1">'tester'</span>
+  <span class="k">end</span>
+
+  <span class="n">dummy</span> <span class="ss">:nickname</span><span class="p">,</span> <span class="ss">:use</span> <span class="o">=&gt;</span> <span class="ss">:random_phonetic_string</span>
+<span class="k">end</span>
+</pre></div>
+
+<p>Note that, like any patch to an existing class, it is not strictly required to
+re-declare the parent class.</p>
+
+<p>The name of the test/dummy file should be the same as the main model
+defined in app/models. For instance, app/models/my_model.rb would have a
+corresponding test/dummy/my_model.rb which is loaded on demand.</p>
+
+<h2>Development and Testing</h2>
+
+<p>For simplicity and portability, SQLite3 is used as the database back-end for
+testing. If any changes are made to existing migrations the temporary database
+will need to be deleted before they're applied.</p>
+
+<h2>Copyright</h2>
+
+<p>Copyright (c) 2010-2013 Scott Tadman, The Working Group Inc.</p>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Test dummy maintained by <a href="https://github.com/twg">twg</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
