@@ -102,9 +102,7 @@ class TestDummy::Operation
       return
     end
 
-    fields_not_assigned = @fields
-
-    if (fields_not_assigned.any? and create_options)
+    if (create_options)
       # If any of the source keys are listed in the options, then this is
       # interpreted as a hit, that the fields are already defined or will be.
       if ((@source_keys & create_options.keys.collect(&:to_sym)).any?)
@@ -112,15 +110,19 @@ class TestDummy::Operation
       end
     end
 
-    # If there are potentially unassigned fields, the only way to proceed is
-    # to narrow it down to the ones that are still `nil`.
-    if (model and fields_not_assigned and fields_not_assigned.any?)
-      fields_not_assigned = fields_not_assigned.select do |field|
-        model.__send__(field).nil?
-      end
+    # Unless there's a model defined, at this point, there's nothing else to
+    # test and exclude defaults or assignments.
+    unless (model)
+      return @fields
     end
 
-    fields_not_assigned
+    # If there are potentially unassigned fields, the only way to proceed is
+    # to narrow it down to the ones that are still `nil`.
+    (@fields - model.class.column_names.collect(&:to_sym)).select do |field|
+      model.__send__(field).nil?
+    end
+
+    @fields
   end
 
   # Called to apply this operation. The model, create_options and tags

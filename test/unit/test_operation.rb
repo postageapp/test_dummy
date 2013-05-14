@@ -2,10 +2,19 @@ require File.expand_path('../helper', File.dirname(__FILE__))
 
 class TestOperation < Test::Unit::TestCase
   class MockModelExample
-    attr_accessor :field
-    attr_accessor :field_id
-    attr_accessor :root_id
+    COLUMNS = [
+      :field,
+      :field_id,
+      :root_id,
+      :integer
+    ].freeze
+
+    attr_accessor *COLUMNS
     attr_reader :changed
+
+    def self.column_names
+      COLUMNS.collect(&:to_s)
+    end
 
     def self.create_dummy(*args)
       created_dummy = self.new(*args)
@@ -18,6 +27,7 @@ class TestOperation < Test::Unit::TestCase
     def initialize(options = nil)
       @field = options && options[:field]
       @field_id = options && options[:field_id]
+      @integer = options && options[:integer].to_i || 0
 
       # root_id is not "accessible"
       
@@ -500,5 +510,27 @@ class TestOperation < Test::Unit::TestCase
     )
 
     assert_equal false, operation.assignments(model, { }, [ ])
+  end
+
+  def test_with_model_field_default
+    model = MockModelExample.new
+
+    assert_equal 0, model.integer
+    assert_equal [ ], model.changed
+
+    triggered = 0
+
+    operation = TestDummy::Operation.new(
+      :fields => [ :integer ],
+      :block => lambda { triggered += 1 }
+    )
+
+    assert_equal 0, triggered
+
+    operation.apply!(model, { }, [ ])
+
+    assert_equal 1, model.integer
+
+    assert_equal 1, triggered
   end
 end
