@@ -117,12 +117,23 @@ class TestDummy::Operation
     end
 
     # If there are potentially unassigned fields, the only way to proceed is
-    # to narrow it down to the ones that are still `nil`.
-    (@fields - model.class.column_names.collect(&:to_sym)).select do |field|
-      model.__send__(field).nil?
+    # to narrow it down to the ones that are still `nil`. The fields that are
+    # mapped to columns are considered unpopulated or set with defaults because
+    # of the previous tests. The remainder need to be tested by calling send.
+    columns = model.class.column_names.collect(&:to_sym)
+
+    applies_to_fields =@fields.select do |field|
+      columns.include?(field) or model.__send__(field).nil?
     end
 
-    @fields
+    # If any of these fields need to be assigned, then that's the next step.
+    if (applies_to_fields.any?)
+      return applies_to_fields
+    end
+
+    # Otherwise there are fields defined, but none of them need to be assigned,
+    # so the operation is not necessary.
+    false
   end
 
   # Called to apply this operation. The model, create_options and tags

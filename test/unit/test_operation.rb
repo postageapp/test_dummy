@@ -11,6 +11,7 @@ class TestOperation < Test::Unit::TestCase
 
     attr_accessor *COLUMNS
     attr_reader :changed
+    attr_accessor :temporary
 
     def self.column_names
       COLUMNS.collect(&:to_s)
@@ -532,5 +533,38 @@ class TestOperation < Test::Unit::TestCase
     assert_equal 1, model.integer
 
     assert_equal 1, triggered
+  end
+
+  def test_with_model_accessor_when_not_populated
+    model = MockModelExample.new
+
+    triggered = 0
+
+    operation = TestDummy::Operation.new(
+      :fields => [ :temporary ],
+      :block => lambda { triggered += 1 }
+    )
+
+    operation.apply!(model, { }, [ ])
+
+    assert_equal 1, triggered
+    assert_equal 1, model.temporary
+  end
+
+  def test_with_model_accessor_when_populated
+    model = MockModelExample.new
+    model.temporary = :temp
+
+    triggered = 0
+
+    operation = TestDummy::Operation.new(
+      :fields => [ :temporary ],
+      :block => lambda { triggered += 1 }
+    )
+
+    operation.apply!(model, { }, [ ])
+
+    assert_equal 0, triggered
+    assert_equal :temp, model.temporary
   end
 end
