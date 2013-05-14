@@ -14,9 +14,12 @@ module TestDummy::TestHelper
       yield(instance)
     end
 
-    instance.dummy!(create_attributes, tags)
-    
+    instance.class.dummy_definition.apply!(instance, create_attributes, tags)
+
     instance.save!
+
+    instance.class.dummy_definition.apply_after_save!(instance, create_attributes, tags)
+
     instance
   end
   alias_method :a, :dummy

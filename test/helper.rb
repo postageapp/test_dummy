@@ -22,6 +22,15 @@ TestDummy::Railtie.apply!
 
 class Test::Unit::TestCase
   include TestDummy::TestHelper
+
+  def assert_created(model)
+    assert model, "Model should not be nil"
+
+    assert_equal [ ], model.errors.full_messages
+    assert_equal true, model.valid?, "Model is not valid."
+
+    assert_equal false, model.new_record?, "Model has not been saved."
+  end
 end
 
 class TestDummy::Application < Rails::Application

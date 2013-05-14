@@ -54,6 +54,22 @@ class TestOperation < Test::Unit::TestCase
     assert_equal 12, model.field.length
   end
 
+  def test_with_after
+    triggered = 0
+    operation = TestDummy::Operation.new(
+      :block => lambda { triggered += 1 },
+      :after => :save
+    )
+
+    assert_equal :save, operation.after
+
+    assert_equal 0, triggered
+
+    operation.apply!(nil, { }, [ ])
+
+    assert_equal 1, triggered
+  end
+
   def test_with_fields
     operation = TestDummy::Operation.new(
       :fields => [ :field, :field_id ]

@@ -167,7 +167,7 @@ module TestDummy
 
       model.save
 
-      self.dummy_definition.apply_after_save!(nil, create_attributes, tags)
+      self.dummy_definition.apply_after_save!(model, create_attributes, tags)
       
       model
     end
@@ -187,6 +187,8 @@ module TestDummy
       
       model.save!
       
+      self.dummy_definition.apply_after_save!(model, create_attributes, tags)
+
       model
     end
   end

@@ -6,10 +6,11 @@ class TestBill < Test::Unit::TestCase
 
     assert_equal [ :account, :order_date ], Bill.dummy_definition.fields
     assert_equal [ :account, :order_date, :due_date ], Bill.dummy_definition.fields(:overdue)
+    assert_equal [ :account, :order_date ], Bill.dummy_definition.fields(:with_items)
   end
 
   def test_create_dummy
-    bill = Bill.create_dummy
+    bill = a Bill
 
     assert bill
 
@@ -48,7 +49,7 @@ class TestBill < Test::Unit::TestCase
   def test_with_overdue_tag
     account = an Account
 
-    bill = Bill.create_dummy(:overdue, :account => account)
+    bill = a Bill, :overdue, :account => account
 
     assert bill
 
@@ -65,5 +66,14 @@ class TestBill < Test::Unit::TestCase
     assert_equal account.id, bill.account_id
 
     assert_equal [ bill.id ], account.bills.collect(&:id)
+  end
+
+  def test_with_items_tag
+    bill = a Bill, :with_items
+
+    assert_created bill
+
+    assert_equal 5, bill.items.count
+    assert_equal 5, bill.items.reject(&:new_record?).length
   end
 end

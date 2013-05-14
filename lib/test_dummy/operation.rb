@@ -1,4 +1,20 @@
 class TestDummy::Operation
+  # == Constants ============================================================
+
+  VALID_OPTIONS = [
+    :block,
+    :fields,
+    :only,
+    :except,
+    :after,
+    :force,
+    :with,
+    :from,
+    :model_class,
+    :foreign_key,
+    :inherit
+  ].freeze
+
   # == Properties ===========================================================
 
   attr_reader :source_methods
@@ -13,6 +29,12 @@ class TestDummy::Operation
 
   def initialize(options)
     @blocks = [ ]
+
+    invalid_options = options.keys - VALID_OPTIONS
+
+    if (invalid_options.any?)
+      raise TestDummy::Exception, "Unknown options to #{self.class}: #{invalid_options.inspect}"
+    end
 
     assign_block_options!(options)
     assign_fields_options!(options)

@@ -10,4 +10,10 @@ class Bill
 
     (date >= Date.today) ? Date.today.advance(:days => -1) : date
   end
+
+  dummy :only => :with_items, :after => :save do |bill|
+    5.times do
+      bill.items.create_dummy
+    end
+  end
 end
