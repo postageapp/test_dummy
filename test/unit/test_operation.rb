@@ -1,6 +1,6 @@
 require File.expand_path('../helper', File.dirname(__FILE__))
 
-class TestOperation < Test::Unit::TestCase
+class TestOperation < MiniTest::Unit::TestCase
   class MockModelExample
     COLUMNS = [
       :field,

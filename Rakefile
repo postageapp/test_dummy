@@ -1,8 +1,11 @@
 require 'rubygems'
 require 'rake'
 
+require 'bundler/setup'
+
 begin
   require 'jeweler'
+
   Jeweler::Tasks.new do |gem|
     gem.name = "test_dummy"
     gem.summary = %q[Quick test data generator and fake model maker]
@@ -11,16 +14,16 @@ begin
     gem.homepage = "http://github.com/tadman/test_dummy"
     gem.authors = %w[ tadman ]
   end
+
   Jeweler::GemcutterTasks.new
 rescue LoadError
   puts "Jeweler (or a dependency) not available. Install it with: gem install jeweler"
 end
 
 require 'rake/testtask'
-Rake::TestTask.new(:test) do |test|
-  test.libs << 'lib' << 'test'
-  test.pattern = 'test/**/test_*.rb'
-  test.verbose = true
+
+Rake::TestTask.new do |test|
+  test.pattern = 'test/unit/test_*.rb'
 end
 
 task :default => :test

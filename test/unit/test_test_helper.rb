@@ -1,6 +1,6 @@
 require File.expand_path('../helper', File.dirname(__FILE__))
 
-class TestTestHelper < Test::Unit::TestCase
+class TestTestHelper < MiniTest::Unit::TestCase
   def test_macros
     account = an Account
 

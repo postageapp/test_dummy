@@ -1,6 +1,6 @@
 require File.expand_path('../helper', File.dirname(__FILE__))
 
-class TestUser < Test::Unit::TestCase
+class TestUser < MiniTest::Unit::TestCase
   def test_extension_loaded
     assert User.respond_to?(:create_dummy)
 

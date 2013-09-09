@@ -14,12 +14,17 @@ when 2
 else
   class TestDummy::Railtie < Rails::Railtie
     def self.apply!
-      if (defined?(ActiveRecord))
+      if (defined?(ActiveRecord) and defined?(ActiveRecord::Base))
         ActiveRecord::Base.send(:include, TestDummy)
       end
 
-      ActiveSupport::TestCase.send(:include, TestDummy::TestHelper)
-      Test::Unit::TestCase.send(:include, TestDummy::TestHelper)
+      if (defined?(ActiveSupport) and defined?(ActiveSupport::TestCase))
+        ActiveSupport::TestCase.send(:include, TestDummy::TestHelper)
+      end
+
+      if (defined?(Test) and defined?(Test::Unit))
+        Test::Unit::TestCase.send(:include, TestDummy::TestHelper)
+      end
     end
     
     config.before_configuration do

@@ -1,6 +1,6 @@
 require File.expand_path('../helper', File.dirname(__FILE__))
 
-class TestDefinition < Test::Unit::TestCase
+class TestDefinition < MiniTest::Unit::TestCase
   def test_reflection_properties
     class_name, foreign_key = TestDummy::Support.reflection_properties(Bill, :account)
 

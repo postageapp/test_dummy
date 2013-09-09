@@ -2,7 +2,7 @@ require  File.expand_path('../helper', File.dirname(__FILE__))
 
 require 'example'
 
-class TestTestDummy < Test::Unit::TestCase
+class TestTestDummy < MiniTest::Unit::TestCase
   def test_example_model
     example = Example.create_dummy
     

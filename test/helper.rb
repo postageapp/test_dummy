@@ -1,5 +1,8 @@
 require 'rubygems'
-require 'test/unit'
+
+gem 'minitest'
+require 'minitest/unit'
+require 'minitest/autorun'
 
 ENV['RAILS_ENV'] = 'test'
 
@@ -8,8 +11,6 @@ base_path = File.dirname(__FILE__)
 $LOAD_PATH.unshift(base_path)
 $LOAD_PATH.unshift(File.join(base_path, '..', 'lib'))
 $LOAD_PATH.unshift(File.join(base_path, '..', 'test', 'models'))
-
-gem 'rails'
 
 require 'rails'
 require 'active_record'
@@ -20,7 +21,7 @@ require 'ostruct'
 
 TestDummy::Railtie.apply!
 
-class Test::Unit::TestCase
+class Minitest::Test
   include TestDummy::TestHelper
 
   def assert_created(model)
