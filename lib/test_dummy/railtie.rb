@@ -32,7 +32,7 @@ else
     end
     
     config.to_prepare do
-      self.apply!
+      TestDummy::Railtie.apply!
     end
   end
 end
