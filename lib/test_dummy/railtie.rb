@@ -1,4 +1,4 @@
-require File.expand_path('../test_dummy', File.dirname(__FILE__))
+require_relative '../test_dummy'
 
 case (Rails::VERSION::MAJOR)
 when 2
@@ -25,10 +25,14 @@ else
       if (defined?(Test) and defined?(Test::Unit))
         Test::Unit::TestCase.send(:include, TestDummy::TestHelper)
       end
+
+      if (defined?(MiniTest) and defined?(MiniTest::Unit))
+        MiniTest::Unit::TestCase.send(:include, TestDummy::TestHelper)
+      end
     end
     
-    config.before_configuration do
-      apply!
+    config.to_prepare do
+      self.apply!
     end
   end
 end

@@ -1,8 +1,12 @@
-require 'rubygems'
+require 'bundler/setup'
 
 gem 'minitest'
-require 'minitest/unit'
+
 require 'minitest/autorun'
+require 'minitest/unit'
+
+gem 'protected_attributes'
+require 'protected_attributes'
 
 ENV['RAILS_ENV'] = 'test'
 
@@ -21,7 +25,7 @@ require 'ostruct'
 
 TestDummy::Railtie.apply!
 
-class Minitest::Test
+class Minitest::Unit::TestCase
   include TestDummy::TestHelper
 
   def assert_created(model)
@@ -41,8 +45,8 @@ end
 TestDummy.dummy_extensions_path = File.expand_path('dummy', File.dirname(__FILE__))
 
 ActiveRecord::Base.establish_connection(
-  'adapter' => "sqlite3",
-  'database' => File.expand_path('db/test.sqlite3', base_path)
+  adapter: "sqlite3",
+  database: File.expand_path('db/test.sqlite3', base_path)
 )
 
 ActiveRecord::Migrator.migrate(File.expand_path('db/migrate', base_path))

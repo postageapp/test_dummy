@@ -1,4 +1,4 @@
-require File.expand_path('../helper', File.dirname(__FILE__))
+require_relative '../helper'
 
 class TestDefinition < MiniTest::Unit::TestCase
   def test_defaults

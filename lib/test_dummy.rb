@@ -140,7 +140,7 @@ module TestDummy
     # the dummy operation is completed. Returns a dummy model which has not
     # been saved.
     def build_dummy(create_attributes = nil, tags = nil)
-      build_scope = (method(:scoped).arity == 1) ? scoped(nil).scope(:create) : scoped.scope_for_create
+      build_scope = where(nil)
 
       create_attributes = TestDummy::Support.combine_attributes(build_scope, create_attributes)
 
