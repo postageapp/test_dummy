@@ -39,6 +39,7 @@ class Minitest::Unit::TestCase
 end
 
 class TestDummy::Application < Rails::Application
+  config.active_support.test_order = :random
   config.active_support.deprecation = :warn
 end
 

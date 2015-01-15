@@ -1,10 +1,10 @@
 source 'https://rubygems.org/'
 
-gem 'rails', '>=3.2.0'
+gem 'rails', '>=4.1'
 
 group :development do
   gem 'protected_attributes'
-  gem 'minitest', '~>4.2'
+  gem 'minitest'
   gem 'jeweler'
   gem 'sqlite3'
 end
