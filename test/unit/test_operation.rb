@@ -1,6 +1,6 @@
 require_relative '../helper'
 
-class TestOperation < MiniTest::Unit::TestCase
+class TestOperation < MiniTest::Test
   class MockModelExample
     COLUMNS = [
       :field,

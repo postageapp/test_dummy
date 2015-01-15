@@ -1,6 +1,6 @@
 require_relative '../helper'
 
-class TestDefinition < MiniTest::Unit::TestCase
+class TestDefinition < MiniTest::Test
   def test_defaults
     definition = TestDummy::Definition.new
 

@@ -25,7 +25,7 @@ require 'ostruct'
 
 TestDummy::Railtie.apply!
 
-class Minitest::Unit::TestCase
+class MiniTest::Test
   include TestDummy::TestHelper
 
   def assert_created(model)

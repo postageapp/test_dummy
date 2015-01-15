@@ -2,7 +2,7 @@ require_relative '../helper'
 
 require 'example'
 
-class TestTestDummy < MiniTest::Unit::TestCase
+class TestTestDummy < MiniTest::Test
   def test_example_model
     example = Example.create_dummy
     

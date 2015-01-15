@@ -27,7 +27,7 @@ else
       end
 
       if (defined?(MiniTest) and defined?(MiniTest::Unit))
-        MiniTest::Unit::TestCase.send(:include, TestDummy::TestHelper)
+        MiniTest::Test.send(:include, TestDummy::TestHelper)
       end
     end
     
