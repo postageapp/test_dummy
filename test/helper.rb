@@ -4,8 +4,8 @@ gem 'test-unit'
 
 require 'test/unit'
 
-gem 'protected_attributes'
-require 'protected_attributes'
+# gem 'protected_attributes'
+# require 'protected_attributes'
 
 ENV['RAILS_ENV'] = 'test'
 
@@ -65,5 +65,12 @@ TestDummy.define do
 
   dummy :phonetic_string do
     TestDummy::Helper.random_phonetic_string(32)
+  end
+end
+
+# For avoiding protected_attributes testing
+
+class ActiveRecord::Base
+  def self.attr_accessible(*args)
   end
 end
