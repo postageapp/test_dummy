@@ -1,6 +1,6 @@
 require_relative '../helper'
 
-class TestItem < MiniTest::Test
+class TestItem < Test::Unit::TestCase
   def test_extension_loaded
     assert Item.respond_to?(:create_dummy)
 

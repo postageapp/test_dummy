@@ -1,6 +1,6 @@
 require_relative '../helper'
 
-class TestOperation < MiniTest::Test
+class TestLoader < Test::Unit::TestCase
   def test_defaults
     loader = TestDummy::Loader.new
 

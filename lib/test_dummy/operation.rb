@@ -30,6 +30,11 @@ class TestDummy::Operation
   def initialize(options)
     @blocks = [ ]
 
+    @force = false
+    @only = nil
+    @except = nil
+    @after = nil
+
     invalid_options = options.keys - VALID_OPTIONS
 
     if (invalid_options.any?)
@@ -332,10 +337,10 @@ protected
   end
 
   def assign_reflection_block!(options)
-    return unless (@model_class)
+    return unless (defined?(@model_class))
 
     @blocks <<
-      if (@inherited_attributes)
+      if (defined?(@inherited_attributes))
         lambda do |model|
           @model_class.create_dummy do |reflection_model|
             @inherited_attributes.each do |attribute, proc|

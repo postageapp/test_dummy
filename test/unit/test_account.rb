@@ -1,6 +1,6 @@
 require_relative '../helper'
 
-class TestAccount < MiniTest::Test
+class TestAccount < Test::Unit::TestCase
   def test_extension_loaded
     assert Account.respond_to?(:create_dummy)
 

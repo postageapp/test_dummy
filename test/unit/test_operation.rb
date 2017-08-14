@@ -1,6 +1,6 @@
 require_relative '../helper'
 
-class TestOperation < MiniTest::Test
+class TestOperation < Test::Unit::TestCase
   class MockModelExample
     COLUMNS = [
       :field,
@@ -9,7 +9,7 @@ class TestOperation < MiniTest::Test
       :integer
     ].freeze
 
-    attr_accessor *COLUMNS
+    attr_accessor(*COLUMNS)
     attr_reader :changed
     attr_accessor :temporary
 
@@ -33,7 +33,7 @@ class TestOperation < MiniTest::Test
       # root_id is not "accessible"
       
       @changed = options && options.keys.collect(&:to_s) || [ ]
-   end
+    end
   end
 
   def test_defaults
@@ -65,7 +65,7 @@ class TestOperation < MiniTest::Test
     assert_equal 12, model.field.length
   end
 
-  def test_with_after
+  def test_with_after_and_block
     triggered = 0
     operation = TestDummy::Operation.new(
       :block => lambda { triggered += 1 },

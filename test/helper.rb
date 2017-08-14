@@ -1,9 +1,8 @@
 require 'bundler/setup'
 
-gem 'minitest'
+gem 'test-unit'
 
-require 'minitest/autorun'
-require 'minitest/unit'
+require 'test/unit'
 
 gem 'protected_attributes'
 require 'protected_attributes'
@@ -25,7 +24,7 @@ require 'ostruct'
 
 TestDummy::Railtie.apply!
 
-class MiniTest::Test
+class Test::Unit::TestCase
   include TestDummy::TestHelper
 
   def assert_created(model)

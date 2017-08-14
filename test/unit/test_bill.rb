@@ -1,6 +1,6 @@
 require_relative '../helper'
 
-class TestBill < MiniTest::Test
+class TestBill < Test::Unit::TestCase
   def test_extension_loaded
     assert Bill.respond_to?(:create_dummy)
 

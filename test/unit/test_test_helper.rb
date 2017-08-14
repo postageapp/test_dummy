@@ -1,6 +1,6 @@
 require_relative '../helper'
 
-class TestTestHelper < MiniTest::Test
+class TestTestHelper < Test::Unit::TestCase
   def test_macros
     account = an Account
 

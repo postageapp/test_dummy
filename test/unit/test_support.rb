@@ -1,6 +1,6 @@
 require_relative '../helper'
 
-class TestDefinition < MiniTest::Test
+class TestDefinition < Test::Unit::TestCase
   def test_reflection_properties
     class_name, foreign_key = TestDummy::Support.reflection_properties(Bill, :account)
 
