@@ -1,4 +1,6 @@
-require_relative '../test_dummy'
+unless (defined?(TestDummy))
+  require_relative '../test_dummy'
+end
 
 case (Rails::VERSION::MAJOR)
 when 2
