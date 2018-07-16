@@ -49,7 +49,13 @@ ActiveRecord::Base.establish_connection(
   database: File.expand_path('db/test.sqlite3', base_path)
 )
 
-ActiveRecord::Migrator.migrate(File.expand_path('db/migrate', base_path))
+if (defined?(ActiveRecord::MigrationContext))
+  ActiveRecord::MigrationContext.new(File.expand_path('db/migrate', base_path)).migrate
+elsif (ActiveRecord::Migrator.respond_to?(:migrate))
+  ActiveRecord::Migrator.migrate(File.expand_path('db/migrate', base_path))
+else
+  raise "Cannot run migrations, no migrator found."
+end
 
 ActiveSupport::Dependencies.autoload_paths << File.expand_path('models', base_path)
 
@@ -61,7 +67,7 @@ Rails.root
 
 TestDummy.define do
   dummy :description,
-    :with => :phonetic_string
+    with: :phonetic_string
 
   dummy :phonetic_string do
     TestDummy::Helper.random_phonetic_string(32)

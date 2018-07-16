@@ -23,7 +23,7 @@ class User < ActiveRecord::Base
   # == Validations ==========================================================
   
   validates :password,
-    :confirmation => true
+    confirmation: true
 
   # == Scopes ===============================================================
 

@@ -123,7 +123,7 @@ module TestDummy
         end
 
       if (block_given?)
-        options = options.merge(:block => Proc.new)
+        options = options.merge(block: Proc.new)
       end
 
       self.dummy_definition.define_operation(self, fields, options)

@@ -50,7 +50,7 @@ Like the default `create` method, `create_dummy` also takes arguments that
 can be used to supply pre-defined attributes:
 
 ```ruby
-named_example = ExampleModel.create_dummy(:name => 'Example')
+named_example = ExampleModel.create_dummy(name: 'Example')
 ```
 
 Any attribute which has validation requirements will need to have a generator
@@ -76,7 +76,7 @@ Keep in mind it is possible to create invalid model instances if the parameters
 sent in would result in a validation error. For instance:
 
 ```ruby
-broken_example = ExampleModel.create_dummy(:name => nil)
+broken_example = ExampleModel.create_dummy(name: nil)
 
 broken_example.valid?
 # => false
@@ -136,7 +136,7 @@ class ExampleModel < ActiveRecord::Base
     'tester'
   end
   
-  dummy :nickname, :use => :random_phonetic_string
+  dummy :nickname, use: :random_phonetic_string
 end
 ```
 
@@ -156,7 +156,7 @@ class ExampleModel
     'tester'
   end
 
-  dummy :nickname, :use => :random_phonetic_string
+  dummy :nickname, use: :random_phonetic_string
 end
 ```
 

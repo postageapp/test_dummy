@@ -90,7 +90,7 @@ class TestDummy::Definition
     if (fields.any?)
       fields.each do |field|
         field_options = options.merge(
-          :fields => [ field ].flatten.collect(&:to_sym)
+          fields: [ field ].flatten.collect(&:to_sym)
         )
 
         model_class, foreign_key = TestDummy::Support.reflection_properties(model_class, field)

@@ -27,7 +27,7 @@ class TestBill < Test::Unit::TestCase
 
   def test_create_with_account
     account = an Account
-    bill = a Bill, :account => account
+    bill = a Bill, account: account
 
     assert_equal account.id, bill.account.id
   end
@@ -49,7 +49,7 @@ class TestBill < Test::Unit::TestCase
   def test_with_overdue_tag
     account = an Account
 
-    bill = a Bill, :overdue, :account => account
+    bill = a Bill, :overdue, account: account
 
     assert bill
 

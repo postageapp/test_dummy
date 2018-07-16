@@ -12,7 +12,7 @@ class User::Admin < User
   # == Validations ==========================================================
 
   validates :authorization_code,
-    :presence => true
+    presence: true
   
   # == Scopes ===============================================================
 

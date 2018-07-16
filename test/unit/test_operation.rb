@@ -51,8 +51,8 @@ class TestOperation < Test::Unit::TestCase
 
   def test_with_option
     operation = TestDummy::Operation.new(
-      :fields => [ :field ],
-      :with => :random_string
+      fields: [ :field ],
+      with: :random_string
     )
 
     assert_equal true, TestDummy::Helper.respond_to?(:random_string)
@@ -68,8 +68,8 @@ class TestOperation < Test::Unit::TestCase
   def test_with_after_and_block
     triggered = 0
     operation = TestDummy::Operation.new(
-      :block => lambda { triggered += 1 },
-      :after => :save
+      block: lambda { triggered += 1 },
+      after: :save
     )
 
     assert_equal :save, operation.after
@@ -83,7 +83,7 @@ class TestOperation < Test::Unit::TestCase
 
   def test_with_fields
     operation = TestDummy::Operation.new(
-      :fields => [ :field, :field_id ]
+      fields: [ :field, :field_id ]
     )
 
     assert_equal [ :field, :field_id ], operation.fields
@@ -91,7 +91,7 @@ class TestOperation < Test::Unit::TestCase
 
   def test_with_after
     operation = TestDummy::Operation.new(
-      :after => :save
+      after: :save
     )
 
     assert_equal :save, operation.after
@@ -101,8 +101,8 @@ class TestOperation < Test::Unit::TestCase
     triggered = 0
 
     operation = TestDummy::Operation.new(
-      :only => :test_tag,
-      :block => lambda { triggered += 1 }
+      only: :test_tag,
+      block: lambda { triggered += 1 }
     )
 
     assert_equal [ ], operation.fields(nil)
@@ -129,8 +129,8 @@ class TestOperation < Test::Unit::TestCase
     triggered = 0
 
     operation = TestDummy::Operation.new(
-      :only => [ :first_tag, :second_tag ],
-      :block => lambda { triggered += 1 }
+      only: [ :first_tag, :second_tag ],
+      block: lambda { triggered += 1 }
     )
 
     assert_equal [ ], operation.fields(nil)
@@ -157,9 +157,9 @@ class TestOperation < Test::Unit::TestCase
     triggered = 0
 
     operation = TestDummy::Operation.new(
-      :fields => [ :test_field ],
-      :only => [ :test_tag ],
-      :block => lambda { triggered += 1 }
+      fields: [ :test_field ],
+      only: [ :test_tag ],
+      block: lambda { triggered += 1 }
     )
 
     assert_equal [ :test_tag ], operation.only
@@ -182,8 +182,8 @@ class TestOperation < Test::Unit::TestCase
     triggered = 0
 
     operation = TestDummy::Operation.new(
-      :except => [ :test_tag ],
-      :block => lambda { triggered += 1 }
+      except: [ :test_tag ],
+      block: lambda { triggered += 1 }
     )
 
     assert_equal nil, operation.only
@@ -206,9 +206,9 @@ class TestOperation < Test::Unit::TestCase
     triggered = 0
 
     operation = TestDummy::Operation.new(
-      :fields => [ :test_field ],
-      :except => [ :test_tag ],
-      :block => lambda { triggered += 1 }
+      fields: [ :test_field ],
+      except: [ :test_tag ],
+      block: lambda { triggered += 1 }
     )
 
     assert_equal nil, operation.only
@@ -231,9 +231,9 @@ class TestOperation < Test::Unit::TestCase
     triggered = 0
 
     operation = TestDummy::Operation.new(
-      :only => [ :only_tag ],
-      :except => [ :except_tag ],
-      :block => lambda { triggered += 1 }
+      only: [ :only_tag ],
+      except: [ :except_tag ],
+      block: lambda { triggered += 1 }
     )
 
     assert_equal [ :only_tag ], operation.only
@@ -268,10 +268,10 @@ class TestOperation < Test::Unit::TestCase
     triggered = 0
 
     operation = TestDummy::Operation.new(
-      :fields => [ :test_field ],
-      :only => [ :only_tag ],
-      :except => [ :except_tag ],
-      :block => lambda { triggered += 1 }
+      fields: [ :test_field ],
+      only: [ :only_tag ],
+      except: [ :except_tag ],
+      block: lambda { triggered += 1 }
     )
 
     assert_equal [ :only_tag ], operation.only
@@ -308,8 +308,8 @@ class TestOperation < Test::Unit::TestCase
     index = 0
 
     operation = TestDummy::Operation.new(
-      :fields => [ :field_id, :root_id ],
-      :block => lambda { index += 1 }
+      fields: [ :field_id, :root_id ],
+      block: lambda { index += 1 }
     )
 
     model = MockModelExample.new
@@ -327,7 +327,7 @@ class TestOperation < Test::Unit::TestCase
     block = lambda { triggered += 1 }
 
     operation = TestDummy::Operation.new(
-      :block => block
+      block: block
     )
 
     operation.apply!(nil, { }, [ ])
@@ -341,8 +341,8 @@ class TestOperation < Test::Unit::TestCase
     model = MockModelExample.new
 
     operation = TestDummy::Operation.new(
-      :fields => [ :field ],
-      :block => block
+      fields: [ :field ],
+      block: block
     )
 
     operation.apply!(model, { }, [ ])
@@ -355,14 +355,14 @@ class TestOperation < Test::Unit::TestCase
   def test_block_with_option_specified
     triggered = 0
     block = lambda { triggered += 1 }
-    model = MockModelExample.new(:field => nil)
+    model = MockModelExample.new(field: nil)
 
     operation = TestDummy::Operation.new(
-      :fields => [ :field ],
-      :block => block
+      fields: [ :field ],
+      block: block
     )
 
-    operation.apply!(model, { :field => true }, [ ])
+    operation.apply!(model, { field: true }, [ ])
 
     assert_equal 0, triggered
 
@@ -372,14 +372,14 @@ class TestOperation < Test::Unit::TestCase
   def test_block_with_model_set
     triggered = false
     block = lambda { triggered = :set }
-    model = MockModelExample.new(:field => :default)
+    model = MockModelExample.new(field: :default)
 
     operation = TestDummy::Operation.new(
-      :fields => [ :field ],
-      :block => block
+      fields: [ :field ],
+      block: block
     )
 
-    operation.apply!(model, { :field => true }, [ ])
+    operation.apply!(model, { field: true }, [ ])
 
     assert_equal false, triggered
 
@@ -392,8 +392,8 @@ class TestOperation < Test::Unit::TestCase
     model = MockModelExample.new
 
     operation = TestDummy::Operation.new(
-      :fields => [ :field ],
-      :block => block
+      fields: [ :field ],
+      block: block
     )
 
     operation.apply!(model, { }, [ ])
@@ -406,20 +406,20 @@ class TestOperation < Test::Unit::TestCase
   def test_block_with_model_reflection_attribute_set
     triggered = 0
     block = lambda { triggered += 1 }
-    model = MockModelExample.new(:field => :reference)
+    model = MockModelExample.new(field: :reference)
 
     assert_equal %w[ field ], model.changed
 
     operation = TestDummy::Operation.new(
-      :fields => [ :field ],
-      :foreign_key => :field_id,
-      :block => block
+      fields: [ :field ],
+      foreign_key: :field_id,
+      block: block
     )
 
     assert_equal [ :field, 'field', :field_id, 'field_id' ], operation.source_keys
     assert_equal [ :field, :field_id ], operation.source_methods
 
-    assert_equal false, operation.assignments(model, { :field => :reference }, [ ])
+    assert_equal false, operation.assignments(model, { field: :reference }, [ ])
 
     operation.apply!(model, { }, [ ])
 
@@ -431,12 +431,12 @@ class TestOperation < Test::Unit::TestCase
   def test_block_with_model_foreign_key_set
     triggered = false
     block = lambda { triggered = 0 }
-    model = MockModelExample.new(:field_id => 1)
+    model = MockModelExample.new(field_id: 1)
 
     operation = TestDummy::Operation.new(
-      :fields => [ :field ],
-      :foreign_key => :field_id,
-      :block => block
+      fields: [ :field ],
+      foreign_key: :field_id,
+      block: block
     )
 
     assert_equal [ :field, 'field', :field_id, 'field_id' ], operation.source_keys
@@ -458,10 +458,10 @@ class TestOperation < Test::Unit::TestCase
     model.root_id = 1
 
     operation = TestDummy::Operation.new(
-      :fields => [ :field ],
-      :inherit => :root_id,
-      :model_class => MockModelExample,
-      :foreign_key => :field_id
+      fields: [ :field ],
+      inherit: :root_id,
+      model_class: MockModelExample,
+      foreign_key: :field_id
     )
 
     assert_equal [ :field, 'field', :field_id, 'field_id' ], operation.source_keys
@@ -481,10 +481,10 @@ class TestOperation < Test::Unit::TestCase
     model.root_id = 1
 
     operation = TestDummy::Operation.new(
-      :fields => [ :field ],
-      :inherit => { :root_id => [ :root_id ] },
-      :model_class => MockModelExample,
-      :foreign_key => :field_id
+      fields: [ :field ],
+      inherit: { root_id: [ :root_id ] },
+      model_class: MockModelExample,
+      foreign_key: :field_id
     )
 
     assert_equal [ :field, 'field', :field_id, 'field_id' ], operation.source_keys
@@ -500,14 +500,14 @@ class TestOperation < Test::Unit::TestCase
   end
 
   def test_with_reflection_already_assigned
-    model = MockModelExample.new(:field_id => 1)
+    model = MockModelExample.new(field_id: 1)
 
     assert_equal %w[ field_id ], model.changed
 
     operation = TestDummy::Operation.new(
-      :fields => [ :field ],
-      :model_class => MockModelExample,
-      :foreign_key => :field_id
+      fields: [ :field ],
+      model_class: MockModelExample,
+      foreign_key: :field_id
     )
 
     assert_equal false, operation.assignments(model, { }, [ ])
@@ -522,8 +522,8 @@ class TestOperation < Test::Unit::TestCase
     triggered = 0
 
     operation = TestDummy::Operation.new(
-      :fields => [ :integer ],
-      :block => lambda { triggered += 1 }
+      fields: [ :integer ],
+      block: lambda { triggered += 1 }
     )
 
     assert_equal 0, triggered
@@ -541,8 +541,8 @@ class TestOperation < Test::Unit::TestCase
     triggered = 0
 
     operation = TestDummy::Operation.new(
-      :fields => [ :temporary ],
-      :block => lambda { triggered += 1 }
+      fields: [ :temporary ],
+      block: lambda { triggered += 1 }
     )
 
     operation.apply!(model, { }, [ ])
@@ -558,8 +558,8 @@ class TestOperation < Test::Unit::TestCase
     triggered = 0
 
     operation = TestDummy::Operation.new(
-      :fields => [ :temporary ],
-      :block => lambda { triggered += 1 }
+      fields: [ :temporary ],
+      block: lambda { triggered += 1 }
     )
 
     operation.apply!(model, { }, [ ])

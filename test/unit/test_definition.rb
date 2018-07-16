@@ -26,9 +26,9 @@ class TestDefinition < Test::Unit::TestCase
     triggered = 0
 
     options = {
-      :only => [ :only_tag ].freeze,
-      :except => [ :except_tag ].freeze,
-      :block => lambda { triggered += 1 }
+      only: [ :only_tag ].freeze,
+      except: [ :except_tag ].freeze,
+      block: lambda { triggered += 1 }
     }.freeze
 
     definition.define_operation(Bill, [ :account ], options)
@@ -42,8 +42,8 @@ class TestDefinition < Test::Unit::TestCase
     triggered = 0
 
     options = {
-      :after => :save,
-      :block => lambda { triggered += 1 }
+      after: :save,
+      block: lambda { triggered += 1 }
     }.freeze
 
     definition.define_operation(Bill, [ :account ], options)

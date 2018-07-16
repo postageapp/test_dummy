@@ -26,4 +26,4 @@ Rake::TestTask.new do |test|
   test.pattern = 'test/unit/test_*.rb'
 end
 
-task :default => :test
+task default: :test
