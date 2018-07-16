@@ -11,9 +11,9 @@ Gem::Specification.new do |s|
   s.required_rubygems_version = Gem::Requirement.new(">= 0".freeze) if s.respond_to? :required_rubygems_version=
   s.require_paths = ["lib".freeze]
   s.authors = ["tadman".freeze]
-  s.date = "2017-08-14"
+  s.date = "2018-07-16"
   s.description = "Test Dummy allows you to define how to fake models automatically so that you can use dummy data for testing instead of fixtures. Dummy models are always generated using the current schema and don't need to me migrated like fixtures.".freeze
-  s.email = "github@tadman.ca".freeze
+  s.email = "tadman@postageapp.com".freeze
   s.extra_rdoc_files = [
     "LICENSE",
     "README.md"
@@ -65,8 +65,8 @@ Gem::Specification.new do |s|
     "test/unit/test_user.rb",
     "test_dummy.gemspec"
   ]
-  s.homepage = "http://github.com/tadman/test_dummy".freeze
-  s.rubygems_version = "2.5.2".freeze
+  s.homepage = "http://github.com/postageapp/test_dummy".freeze
+  s.rubygems_version = "2.7.6".freeze
   s.summary = "Quick test data generator and fake model maker".freeze
 
   if s.respond_to? :specification_version then
@@ -74,20 +74,17 @@ Gem::Specification.new do |s|
 
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
       s.add_runtime_dependency(%q<rails>.freeze, [">= 4.1"])
-      s.add_development_dependency(%q<protected_attributes>.freeze, [">= 0"])
       s.add_development_dependency(%q<test-unit>.freeze, [">= 0"])
       s.add_development_dependency(%q<jeweler>.freeze, [">= 0"])
       s.add_development_dependency(%q<sqlite3>.freeze, [">= 0"])
     else
       s.add_dependency(%q<rails>.freeze, [">= 4.1"])
-      s.add_dependency(%q<protected_attributes>.freeze, [">= 0"])
       s.add_dependency(%q<test-unit>.freeze, [">= 0"])
       s.add_dependency(%q<jeweler>.freeze, [">= 0"])
       s.add_dependency(%q<sqlite3>.freeze, [">= 0"])
     end
   else
     s.add_dependency(%q<rails>.freeze, [">= 4.1"])
-    s.add_dependency(%q<protected_attributes>.freeze, [">= 0"])
     s.add_dependency(%q<test-unit>.freeze, [">= 0"])
     s.add_dependency(%q<jeweler>.freeze, [">= 0"])
     s.add_dependency(%q<sqlite3>.freeze, [">= 0"])

@@ -175,4 +175,4 @@ will need to be deleted before they're applied.
 
 ## Copyright
 
-Copyright (c) 2010-2013 Scott Tadman, The Working Group Inc.
+Copyright (c) 2010-2018 Scott Tadman, PostageApp
