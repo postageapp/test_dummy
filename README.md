@@ -117,6 +117,30 @@ other fields, calling methods, and so forth, but it's important to be careful
 here as the model at this point is incomplete if there are other attributes
 which have yet to have had their `dummy` generator called.
 
+### Inheritance
+
+When a property is inherited from another relationship, as in the record is
+linked in more than one way relationally, the `dummy` method can be instructed
+to try this relationship first.
+
+For example if Item belongs to Invoice and Invoice belongs to Account, but
+Item itself also directly belongs to Account:
+
+```ruby
+class Item
+  dummy :invoice,
+    inherit: {
+      account_id: 'account.id'
+    }
+
+  dummy :account,
+    from: 'invoice.account'
+end
+```
+This way an Item can be created based on an existing Invoice, where that will
+link up to the inherited `account_id` value, or to an existing Account where
+that will generate a new Invoice with the correct `account_id` value.
+
 ### Separate Definition File
 
 If including the attribute dummy generators in the main model file produces

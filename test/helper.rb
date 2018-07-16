@@ -4,9 +4,6 @@ gem 'test-unit'
 
 require 'test/unit'
 
-# gem 'protected_attributes'
-# require 'protected_attributes'
-
 ENV['RAILS_ENV'] = 'test'
 
 base_path = File.dirname(__FILE__)
@@ -45,7 +42,7 @@ end
 TestDummy.dummy_extensions_path = File.expand_path('dummy', File.dirname(__FILE__))
 
 ActiveRecord::Base.establish_connection(
-  adapter: "sqlite3",
+  adapter: 'sqlite3',
   database: File.expand_path('db/test.sqlite3', base_path)
 )
 
@@ -54,7 +51,7 @@ if (defined?(ActiveRecord::MigrationContext))
 elsif (ActiveRecord::Migrator.respond_to?(:migrate))
   ActiveRecord::Migrator.migrate(File.expand_path('db/migrate', base_path))
 else
-  raise "Cannot run migrations, no migrator found."
+  raise 'Cannot run migrations, no migrator found.'
 end
 
 ActiveSupport::Dependencies.autoload_paths << File.expand_path('models', base_path)
@@ -74,7 +71,7 @@ TestDummy.define do
   end
 end
 
-# For avoiding protected_attributes testing
+# For avoiding protected_attributes testing, stub out the function
 
 class ActiveRecord::Base
   def self.attr_accessible(*args)
